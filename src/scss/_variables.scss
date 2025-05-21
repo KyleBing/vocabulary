@@ -1,0 +1,150 @@
+// Colors
+$green        : #4CD964;
+$cyan         : #5AC8FA;
+$blue         : #007AFF;
+$purple       : #5856D6;
+$magenta      : #FF2D70;
+$red          : #FF3B30;
+$orange       : #FF9500;
+$yellow       : #FFCC00;
+$gray         : #8E8E93;
+$grass        : #8BC34A;
+$sky-blue     : #1BADF8;
+$light-purple : #CC73E1;
+$brown        : #A2845E;
+
+$color-main: #FFCC00;
+
+
+
+// Background Color
+$bg-list-active : #fff3df;
+$bg-lighter     : #f5f5f5;
+$bg-light       : #eee;
+$bg-light-td    : #e1e1e1;
+$bg-light-td-hover : black;
+$bg-main        : #373737;
+$bg-menu        : #4A4A4A;
+$bg-searchbar   : #E5E5EA;
+$bg-share       : #FFFDF8;
+$bg-bill-brief  : #fdfdfd;
+
+// Border
+$color-border           : #ddd;
+$color-border-bill      : #d7d7d7;
+$color-border-light     : lighten($color-border, 5%);
+$color-border-highlight : darken($color-border, 15%);
+$color-border-share     : #F0E8DB;
+$color-border-menu      : #646464;
+$color-border-search-bar: #646464;
+
+// Radius
+$radius-mobile: 7px;
+$radius-pc: 10px;
+
+// Font size
+$fz-list-header         : 24px;
+$fz-list-header-mobile  : 22px;
+$fz-list-content        : 14.5px;
+$fz-list-content-mobile : 15px;
+$fz-note                : 14px;
+$fz-small               : 12px;
+$fz-tiny                : 10px;
+$fz-label               : 16px;
+$fz-main                : 14px;
+$fz-title               : 18px;
+$fz-big                 : 30px;
+$fz-header              : 24px;
+$fz-bankcard-header     : 24px;
+$fz-huge                : 42px;
+$fz-menu                : 19px;
+
+// Color text
+$text-label:          #9B9B9B;
+$text-content:        #373737;
+$text-title:          #232323;
+$text-subtitle:       #666;
+$text-date:           #2d2d2d;
+$text-about-subtitle: #D1D5DA;
+$text-menu-second:    $text-about-subtitle;
+
+
+// Height
+$height-header       : 40px;
+$height-list         : 28px;
+$height-loading      : 30px;
+$height-navbar       : 45px;
+
+// Width
+$width-category-sign : 3px;
+$width-index-date    : 25px;
+
+// Grid
+$grid-separate-width-xs: 375px;
+$grid-separate-width-sm: 768px;
+$grid-separate-width-md: 1024px;
+$grid-separate-width-big : 1366px;
+$grid-separate-width-max : 1520px;
+
+
+$menu-panel-sm: 400px;
+$menu-panel-big: 500px;
+
+// Z-index
+$z-toast        : 500;
+$z-mask         : 300;
+$z-navbar       : 200;
+$z-header       : 100;
+$z-waterfall    : 50;
+$z-waterfall-hover: 600;
+
+$weathers: (
+        "sunny",
+        "cloudy",
+        "overcast",
+        "fog",
+        "sprinkle",
+        "rain",
+        "thunderstorm",
+        "snow"
+);
+
+
+// DARK VALUES
+$dark-color: black;
+$dark-bg               : lighten($dark-color, 20%) ;
+$dark-bg-dark          : lighten($dark-color, 15%) ;
+$dark-bg-selector      : lighten($dark-color, 20%) ;
+$dark-bg-page-header   : lighten($dark-color, 35%) ;
+
+$dark-bg-nav           : lighten($dark-color, 10%) ;
+$dark-border-nav       : lighten($dark-color, 2%) ;
+
+$dark-bg-td            : lighten($dark-color, 23%);
+$dark-bg-td-even       : lighten($dark-color, 20%);
+$dark-bg-td-active     : lighten($dark-color, 30%);
+$dark-bg-bill-brief    : lighten($dark-color, 18%);
+$dark-bg-main          : lighten($dark-color, 20%);
+$dark-bg-menu          : lighten($dark-color, 20%);
+
+
+$dark-border           : lighten($dark-color, 26%) ;
+$dark-border-active    : lighten($dark-color, 35%) ;
+
+$dark-menu-border      : lighten($dark-color, 28%)  ;
+$dark-list-header-bg   : lighten($dark-color, 14%) ;
+$dark-list-bg          : lighten($dark-color, 20%) ;
+$dark-list-bg-active   : lighten($dark-color, 23%) ;
+$dark-text-title       : lighten($dark-color, 85%) ;
+$dark-text-label       : lighten($dark-color, 35%) ;
+$dark-text             : lighten($dark-color, 70%) ;
+$dark-text-subtitle    : lighten($dark-color, 60%) ;
+
+$dark-text-header-date: lighten($dark-color, 80%) ;
+$dark-text-header-lunar: lighten($dark-color, 60%) ;
+
+$dark-text-bill-price  : lighten($dark-color, 80%) ;
+
+$dark-scroll-thumb     : lighten($dark-color, 30%) ;
+
+

@@ -1,0 +1,45 @@
+.bold{
+  font-weight: bold;
+}
+.number{
+  font-family: 'JetBrainsMonoDiary' !important;
+}
+.text-green{color: $gradient-aqua;}
+.text-orange{color: $gradient-pumpkin;}
+.text-black{color: #000;}
+.text-gray{color: $gray;}
+.text-income{color: #9e8600}
+.text-expense{color: #01a67a}
+.text-invalid{color: #999}
+
+
+.text-left{text-align: left !important;}
+.text-right{text-align: right !important;}
+.text-center{text-align: center !important;}
+
+
+.float-left   {float: left !important;}
+.float-right  {float: right !important;}
+.hidden {display: none !important;}
+.show   {display: block !important;}
+
+
+.flex-start{
+  justify-content: flex-start !important;
+}
+.flex-end{
+  justify-content: flex-end !important;
+}
+.flex-center{
+  justify-content: center !important;
+}
+
+
+.link {
+  @extend .btn-like;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+

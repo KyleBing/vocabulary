@@ -1,0 +1,26 @@
+/*
+ * 样式 - 暗黑模式
+ */
+
+
+@media (prefers-color-scheme: dark) {
+
+  // SCROLL
+  ::-webkit-scrollbar {
+    background-color: $dark-bg-dark;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: $dark-scroll-thumb;
+  }
+
+  body{
+    background-color: $dark-bg-nav !important;
+    .diary-list-container{
+      border-right-color: $dark-border !important;
+      background-color: $dark-bg;
+    }
+  }
+}
