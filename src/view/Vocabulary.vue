@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {computed, onMounted, ref, watch} from "vue";
+import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap styles
 
 const VOCABULARY_IMPORTS = {
     '初中': () => import('../vocabulary/json/1-初中-顺序.json'),
@@ -90,18 +91,25 @@ function reloadPage() {
 
 <template>
     <div class="select-container">
-        <select v-model="selectedVocabulary" @change="handleVocabularyChange">
+        <select v-model="selectedVocabulary" @change="handleVocabularyChange" class="form-select form-select-sm">
             <option v-for="(_, name) in VOCABULARY_IMPORTS" :key="name" :value="name">{{ name }}</option>
         </select>
-        <button @click="reloadPage">刷新</button>
+        <button @click="reloadPage" class="btn btn-primary btn-sm">刷新</button>
     </div>
     <div class="word-list">
-        <div :class="['word', {known: knownWordsSet.has(item.word)}]"
+        <div :class="['word-item', {known: knownWordsSet.has(item.word)}]"
              @click="addKnownWord(item.word)"
              @contextmenu.prevent="deleteKnownWord(item.word)"
              v-for="item in wordsRandom"
              :key="item"
-        >{{ item.word }}
+        >
+            <div class="word">{{ item.word }}</div>
+            <div class="translation-panel">
+                <div class="translation-item" v-for="translation in item.translations" :key="translation.translation">
+                    <div class="type">{{ translation.type }}</div>
+                    <div class="translation">{{ translation.translation }}</div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -109,17 +117,23 @@ function reloadPage() {
 <style scoped lang="scss">
 @import "@/scss/plugin";
 .word-list{
+    padding-bottom: 100px;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    .word{
+    .word-item{
+        position: relative;
         @include border-radius(10px);
         font-size: 24px;
         cursor: pointer;
         padding: 8px 15px;
+        line-height: 1;
         color: white;
         &:hover{
             background-color: transparentize(white, 0.9);
+            .translation-panel {
+                display: block;
+            }
         }
         &:active{
             background-color: transparentize(white, 0.5);
@@ -127,13 +141,49 @@ function reloadPage() {
         &.known{
             color: transparentize(white, 0.8);
         }
+        .word{
+            // Add any specific styles for the word if needed
+        }
+        .translation-panel{
+            min-width: 100px;
+            color: white;
+            z-index: 100;
+            padding: 3px 5px;
+            @include border-radius(5px);
+            background-color: transparentize(black, 0.3);
+            backdrop-filter: blur(10px);
+            line-height: 1.3;
+            text-align: center;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            font-size: 10px;
+            display: none; // Hide translation by default
+        }
+    }
+}
+.translation-item{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    .type{
+        width: 20px;
+        flex-shrink: 0;
+        color: $green;
+    }
+    .translation{
+        flex-grow: 1;
+        text-align: left;
     }
 }
 
+
 .select-container {
+    z-index: 999;
+    text-align: center;
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 30px;
+    left: 30px;
     display: flex;
     flex-direction: column;
     gap: 10px;
