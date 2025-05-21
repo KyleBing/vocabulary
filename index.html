@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
     <!-- 搜索 -->
-    <meta name='description' content="单词,标题单词,headline diary,人生日志,life log,单词应用,单词app,web版单词,diary web,纯文本单词,免费单词">
-    <meta name='keywords' content="单词,标题单词,headline diary,人生日志,life log,单词应用,单词app,web版单词,diary web,纯文本单词,免费单词">
+    <meta name='description' content="单词">
+    <meta name='keywords' content="单词">
 
     <!-- web app -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,21 +29,7 @@
     <title>单词</title>
 </head>
 <body>
-
-<noscript>
-    <strong>请开启JavaScript支持：未开启 JavaScript 支持的情况下，《标题单词》将无法正常工作</strong>
-</noscript>
 <div id="app"></div>
 <script type="module" src="/src/main.ts"></script>
-<script>
-    setTimeout(() => {
-        if (!/^http:\/\/(a\.kylebing\.cn|localhost|192\.168\.\d{1,3}\.\d{1,3})/i.test(location.href)) {
-            let hm = document.createElement("script");
-            hm.src = "https://hm.baidu.com/hm.js?31039acba0a804e8facb7ff1d6649e0b";
-            let s = document.getElementsByTagName("script")[0];
-            s.parentNode.insertBefore(hm, s);
-        }
-    }, 1000)
-</script>
 </body>
 </html>
