@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {computed, onMounted, ref, watch} from "vue";
 
 const VOCABULARY_IMPORTS = {
     '初中': () => import('../vocabulary/json/1-初中-顺序.json'),
@@ -10,16 +11,18 @@ const VOCABULARY_IMPORTS = {
     'SAT': () => import('../vocabulary/json/7-SAT-顺序.json'),
 }
 
+
 const KEY_LOCALSTORAGE_KEY = "known_words"
 
-import {computed, onMounted, ref, watch} from "vue";
+const knownWordsSet = ref(new Set<string>())
+const knownWordsArray = ref<Array<string>>([])
 
-let knownWordsSet = new Set()
 
 const currentVocabulary = ref<any[]>([])
 
 const wordsRandom = computed(() => {
     return shuffle(currentVocabulary.value)
+    // return currentVocabulary.value
 })
 
 /**
@@ -47,23 +50,29 @@ onMounted(async () => {
     const storedValue = localStorage.getItem(KEY_LOCALSTORAGE_KEY)
     if (storedValue) {
         try {
-            knownWordsSet = new Set(JSON.parse(storedValue))
+            knownWordsArray.value = JSON.parse(storedValue)
+            knownWordsSet.value = new Set(knownWordsArray.value)
         } catch {
-            knownWordsSet = new Set()
+            knownWordsSet.value = new Set()
         }
     }
 })
 
-watch(() => knownWordsSet, () => {
-    localStorage.setItem(KEY_LOCALSTORAGE_KEY, JSON.stringify(Array.from(knownWordsSet)));
-}, {deep: true})
+watch(knownWordsArray, () => {
+    localStorage.setItem(KEY_LOCALSTORAGE_KEY, JSON.stringify(knownWordsArray.value));
+}, { deep: true });
 
+
+function addKnownWord(word: string) {
+    knownWordsSet.value.add(word)
+    knownWordsArray.value.push(word)
+}
 </script>
 
 <template>
     <div class="word-list">
         <div :class="['word', {known: knownWordsSet.has(item.word)}]"
-             @click="knownWordsSet.add(item.word)"
+             @click="addKnownWord(item.word)"
              v-for="item in wordsRandom"
              :key="item"
         >{{ item.word }}
@@ -83,6 +92,7 @@ watch(() => knownWordsSet, () => {
         cursor: pointer;
         padding: 8px 15px;
         color: white;
+        @extend .unselectable;
         &:hover{
             background-color: transparentize(white, 0.9);
         }
@@ -90,7 +100,7 @@ watch(() => knownWordsSet, () => {
             background-color: transparentize(white, 0.5);
         }
         &.known{
-            color: transparentize(white, 0.5);
+            color: transparentize(white, 0.8);
         }
     }
 }
