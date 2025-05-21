@@ -11,7 +11,6 @@ const VOCABULARY_IMPORTS = {
     'SAT': () => import('../vocabulary/json/7-SAT-顺序.json'),
 }
 
-
 const KEY_LOCALSTORAGE_KEY = "known_words"
 
 const knownWordsSet = ref(new Set<string>())
@@ -67,12 +66,39 @@ function addKnownWord(word: string) {
     knownWordsSet.value.add(word)
     knownWordsArray.value.push(word)
 }
+
+function deleteKnownWord(word: string) {
+    knownWordsSet.value.delete(word)
+    knownWordsArray.value = knownWordsArray.value.filter(w => w !== word)
+}
+
+// Add a ref for the selected vocabulary name
+const selectedVocabulary = ref('初中')
+
+// Add a method to handle the change event
+async function handleVocabularyChange(event: Event) {
+    const select = event.target as HTMLSelectElement
+    selectedVocabulary.value = select.value
+    await loadVocabulary(selectedVocabulary.value)
+}
+
+// Add a function to reload the page
+function reloadPage() {
+    window.location.reload();
+}
 </script>
 
 <template>
+    <div class="select-container">
+        <select v-model="selectedVocabulary" @change="handleVocabularyChange">
+            <option v-for="(_, name) in VOCABULARY_IMPORTS" :key="name" :value="name">{{ name }}</option>
+        </select>
+        <button @click="reloadPage">刷新</button>
+    </div>
     <div class="word-list">
         <div :class="['word', {known: knownWordsSet.has(item.word)}]"
              @click="addKnownWord(item.word)"
+             @contextmenu.prevent="deleteKnownWord(item.word)"
              v-for="item in wordsRandom"
              :key="item"
         >{{ item.word }}
@@ -92,7 +118,6 @@ function addKnownWord(word: string) {
         cursor: pointer;
         padding: 8px 15px;
         color: white;
-        @extend .unselectable;
         &:hover{
             background-color: transparentize(white, 0.9);
         }
@@ -103,5 +128,14 @@ function addKnownWord(word: string) {
             color: transparentize(white, 0.8);
         }
     }
+}
+
+.select-container {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 </style>
