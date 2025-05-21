@@ -15,4 +15,4 @@
 ## git submodule
 
 - path: `./src/vocabulary`
-- submodule git:  `https://github.com/KyleBing/english-vocabulary`
+- submodule git:  [`https://github.com/KyleBing/english-vocabulary`](https://github.com/KyleBing/english-vocabulary)
