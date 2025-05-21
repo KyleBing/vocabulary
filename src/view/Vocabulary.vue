@@ -56,6 +56,22 @@ onMounted(async () => {
             knownWordsSet.value = new Set()
         }
     }
+
+    // Add event listeners for keydown and keyup
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Control') {
+            isTranslationCanBeShow.value = true;
+        }
+    });
+    window.addEventListener('keyup', (event) => {
+        if (event.key === 'Control') {
+            isTranslationCanBeShow.value = false;
+        }
+    });
+    // Add event listener for document blur
+    document.addEventListener('blur', () => {
+        isTranslationCanBeShow.value = false;
+    });
 })
 
 watch(knownWordsArray, () => {
@@ -87,6 +103,9 @@ async function handleVocabularyChange(event: Event) {
 function reloadPage() {
     window.location.reload();
 }
+
+// Add a ref to track if the Ctrl key is pressed
+const isTranslationCanBeShow = ref(false);
 </script>
 
 <template>
@@ -104,7 +123,7 @@ function reloadPage() {
              :key="item"
         >
             <div class="word">{{ item.word }}</div>
-            <div class="translation-panel">
+            <div class="translation-panel" v-if="isTranslationCanBeShow">
                 <div class="translation-item" v-for="translation in item.translations" :key="translation.translation">
                     <div class="type">{{ translation.type }}</div>
                     <div class="translation">{{ translation.translation }}</div>
@@ -141,7 +160,9 @@ function reloadPage() {
         &.known{
             color: transparentize(white, 0.8);
         }
+
         .word{
+            @extend .unselectable;
             // Add any specific styles for the word if needed
         }
         .translation-panel{
@@ -176,7 +197,6 @@ function reloadPage() {
         text-align: left;
     }
 }
-
 
 .select-container {
     z-index: 999;
