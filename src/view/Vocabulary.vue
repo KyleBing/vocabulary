@@ -137,6 +137,8 @@ function handleWordClick(word: string) {
             <div class="card-body">
                 <div class="text-muted">已会数量: {{ knownWordsSet.size }} </div>
                 <div class="text-muted">当前词库: {{ currentVocabulary.length }}</div>
+                <hr class="my-2">
+                <div class="text-muted"><a target="_blank" href="https://github.com/KyleBing/vocabulary">github</a></div>
             </div>
         </div>
     </div>
