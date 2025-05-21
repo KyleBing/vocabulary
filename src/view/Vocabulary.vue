@@ -196,7 +196,7 @@ function handleWordClick(word: string) {
             // Add any specific styles for the word if needed
         }
         .translation-panel{
-            min-width: 100px;
+            min-width: 150px;
             color: white;
             z-index: 100;
             padding: 3px 5px;
@@ -218,7 +218,7 @@ function handleWordClick(word: string) {
     justify-content: space-between;
     align-items: flex-start;
     .type{
-        width: 20px;
+        width: 30px;
         flex-shrink: 0;
         color: $green;
     }
