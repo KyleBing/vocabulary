@@ -45,6 +45,10 @@ async function loadVocabulary(name: string) {
     currentVocabulary.value = module.default
 }
 
+// Add a ref to track if the Ctrl key is pressed and active word
+const isCtrlPressed = ref(false);
+const activeWord = ref<string | null>(null);
+
 onMounted(async () => {
     await loadVocabulary('初中')
     const storedValue = localStorage.getItem(KEY_LOCALSTORAGE_KEY)
@@ -60,17 +64,26 @@ onMounted(async () => {
     // Add event listeners for keydown and keyup
     window.addEventListener('keydown', (event) => {
         if (event.key === 'Control') {
-            isTranslationCanBeShow.value = true;
+            isCtrlPressed.value = true;
         }
     });
     window.addEventListener('keyup', (event) => {
         if (event.key === 'Control') {
-            isTranslationCanBeShow.value = false;
+            isCtrlPressed.value = false;
+            activeWord.value = null;
         }
     });
     // Add event listener for document blur
     document.addEventListener('blur', () => {
-        isTranslationCanBeShow.value = false;
+        isCtrlPressed.value = false;
+        activeWord.value = null;
+    });
+    // Add click event listener to hide translation when clicking outside
+    document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.word-item')) {
+            activeWord.value = null;
+        }
     });
 })
 
@@ -104,8 +117,14 @@ function reloadPage() {
     window.location.reload();
 }
 
-// Add a ref to track if the Ctrl key is pressed
-const isTranslationCanBeShow = ref(false);
+// Add a method to handle word click
+function handleWordClick(word: string) {
+    if (isCtrlPressed.value) {
+        deleteKnownWord(word);
+    } else {
+        addKnownWord(word);
+    }
+}
 </script>
 
 <template>
@@ -114,16 +133,22 @@ const isTranslationCanBeShow = ref(false);
             <option v-for="(_, name) in VOCABULARY_IMPORTS" :key="name" :value="name">{{ name }}</option>
         </select>
         <button @click="reloadPage" class="btn btn-primary btn-sm">刷新</button>
+        <div class="card">
+            <div class="card-body">
+                <div class="text-muted">已会数量: {{ knownWordsSet.size }} </div>
+                <div class="text-muted">当前词库: {{ currentVocabulary.length }}</div>
+            </div>
+        </div>
     </div>
     <div class="word-list">
         <div :class="['word-item', {known: knownWordsSet.has(item.word)}]"
-             @click="addKnownWord(item.word)"
-             @contextmenu.prevent="deleteKnownWord(item.word)"
+             @click="handleWordClick(item.word)"
+             @contextmenu.prevent="activeWord = item.word"
              v-for="item in wordsRandom"
              :key="item"
         >
             <div class="word">{{ item.word }}</div>
-            <div class="translation-panel" v-if="isTranslationCanBeShow">
+            <div class="translation-panel" v-if="activeWord === item.word">
                 <div class="translation-item" v-for="translation in item.translations" :key="translation.translation">
                     <div class="type">{{ translation.type }}</div>
                     <div class="translation">{{ translation.translation }}</div>
