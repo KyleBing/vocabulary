@@ -67,12 +67,12 @@ onMounted(async () => {
 
     // Add event listeners for keydown and keyup
     window.addEventListener('keydown', (event) => {
-        if (event.key === 'Control') {
+        if (event.key === 'Control' || event.key === 'Meta') {
             isCtrlPressed.value = true;
         }
     });
     window.addEventListener('keyup', (event) => {
-        if (event.key === 'Control') {
+        if (event.key === 'Control' || event.key === 'Meta') {
             isCtrlPressed.value = false;
             activeWord.value = null;
         }
@@ -138,7 +138,7 @@ function handleWordClick(word: string) {
         <button @click="reloadPage" class="btn btn-primary btn-sm">刷新布局</button>
         <div class="card">
             <div class="card-body">
-                <div class="text-muted">已会数量: {{ knownWordsSet.size }} </div>
+                <div class="text-muted">已标数量: {{ knownWordsSet.size }} </div>
                 <div class="text-muted">当前词库: {{ currentVocabulary.length }}</div>
                 <hr class="my-2">
                 <div class="text-muted"><a target="_blank" href="https://github.com/KyleBing/vocabulary">github</a></div>

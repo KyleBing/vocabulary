@@ -10,6 +10,7 @@
 - 右击显示词条注释
 
 ## 开发
+
 记录存储在 localstorage 所以只支持本机。
 
 ## git submodule
