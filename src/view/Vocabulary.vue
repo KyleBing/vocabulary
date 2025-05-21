@@ -49,8 +49,12 @@ async function loadVocabulary(name: string) {
 const isCtrlPressed = ref(false);
 const activeWord = ref<string | null>(null);
 
+// Add a ref for the selected vocabulary name
+const selectedVocabulary = ref('初中')
+
+// Modify onMounted to remove URL parameter handling
 onMounted(async () => {
-    await loadVocabulary('初中')
+    await loadVocabulary(selectedVocabulary.value)
     const storedValue = localStorage.getItem(KEY_LOCALSTORAGE_KEY)
     if (storedValue) {
         try {
@@ -102,19 +106,16 @@ function deleteKnownWord(word: string) {
     knownWordsArray.value = knownWordsArray.value.filter(w => w !== word)
 }
 
-// Add a ref for the selected vocabulary name
-const selectedVocabulary = ref('初中')
-
-// Add a method to handle the change event
+// Modify handleVocabularyChange to remove URL update
 async function handleVocabularyChange(event: Event) {
     const select = event.target as HTMLSelectElement
     selectedVocabulary.value = select.value
     await loadVocabulary(selectedVocabulary.value)
 }
 
-// Add a function to reload the page
+// Modify reloadPage function to just shuffle
 function reloadPage() {
-    window.location.reload();
+    currentVocabulary.value = [...currentVocabulary.value] // Create new array to trigger reactivity
 }
 
 // Add a method to handle word click
@@ -122,7 +123,9 @@ function handleWordClick(word: string) {
     if (isCtrlPressed.value) {
         deleteKnownWord(word);
     } else {
-        addKnownWord(word);
+        if (!knownWordsSet.value.has(word)) {
+            addKnownWord(word);
+        }
     }
 }
 </script>
@@ -132,7 +135,7 @@ function handleWordClick(word: string) {
         <select v-model="selectedVocabulary" @change="handleVocabularyChange" class="form-select form-select-sm">
             <option v-for="(_, name) in VOCABULARY_IMPORTS" :key="name" :value="name">{{ name }}</option>
         </select>
-        <button @click="reloadPage" class="btn btn-primary btn-sm">刷新</button>
+        <button @click="reloadPage" class="btn btn-primary btn-sm">刷新布局</button>
         <div class="card">
             <div class="card-body">
                 <div class="text-muted">已会数量: {{ knownWordsSet.size }} </div>
