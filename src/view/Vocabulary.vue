@@ -194,7 +194,7 @@ function handleWordClick(word: string, event?: MouseEvent) {
                 <div class="text-muted text-center"><a target="_blank" href="https://github.com/KyleBing/vocabulary" class="small">github</a></div>
             </div>
         </div>
-        <button @click="reloadPage" class="btn btn-danger btn-sm">刷新布局</button>
+        <button @click="reloadPage" class="btn btn-warning btn-sm">刷新布局</button>
 
     </div>
     <div class="word-list">
