@@ -1,6 +1,7 @@
 # 蚕食单词
 
-![preview](https://github.com/user-attachments/assets/c75f80de-0ec9-4173-9d22-9c269303594b)
+![image](https://github.com/user-attachments/assets/133c44cb-b0a3-469a-a340-30dcaa3d9759)
+
 
 
 ## 功能
