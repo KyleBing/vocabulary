@@ -208,7 +208,7 @@ function handleWordClick(word: string) {
             position: absolute;
             top: 100%;
             left: 0;
-            font-size: 10px;
+            font-size: 13px;
             display: none; // Hide translation by default
         }
     }
@@ -221,6 +221,8 @@ function handleWordClick(word: string) {
         width: 30px;
         flex-shrink: 0;
         color: $green;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
     .translation{
         flex-grow: 1;
