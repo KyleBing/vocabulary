@@ -12,10 +12,14 @@ const VOCABULARY_IMPORTS = {
     'SAT': () => import('../vocabulary/json/7-SAT-顺序.json'),
 }
 
-const KEY_LOCALSTORAGE_KEY = "known_words"
+const KEY_LOCALSTORAGE_KNOWN = "known_words"
+const KEY_LOCALSTORAGE_UNCERTAIN = "uncertain_words"
 
 const knownWordsSet = ref(new Set<string>())
 const knownWordsArray = ref<Array<string>>([])
+
+const uncertainWordsSet = ref(new Set<string>())
+const uncertainWordsArray = ref<Array<string>>([])
 
 
 const currentVocabulary = ref<any[]>([])
@@ -47,6 +51,7 @@ async function loadVocabulary(name: string) {
 
 // Add a ref to track if the Ctrl key is pressed and active word
 const isCtrlPressed = ref(false);
+const isSlashPressed = ref(false); // Track if / is pressed
 const activeWord = ref<string | null>(null);
 
 // Add a ref for the selected vocabulary name
@@ -55,13 +60,26 @@ const selectedVocabulary = ref('初中')
 // Modify onMounted to remove URL parameter handling
 onMounted(async () => {
     await loadVocabulary(selectedVocabulary.value)
-    const storedValue = localStorage.getItem(KEY_LOCALSTORAGE_KEY)
-    if (storedValue) {
+
+    // 载入用户数据
+    const knownWordsData = localStorage.getItem(KEY_LOCALSTORAGE_KNOWN)
+    if (knownWordsData) {
         try {
-            knownWordsArray.value = JSON.parse(storedValue)
+            knownWordsArray.value = JSON.parse(knownWordsData)
             knownWordsSet.value = new Set(knownWordsArray.value)
         } catch {
+            knownWordsArray.value = []
             knownWordsSet.value = new Set()
+        }
+    }
+    const uncertainWordsData = localStorage.getItem(KEY_LOCALSTORAGE_UNCERTAIN)
+    if (uncertainWordsData) {
+        try {
+            uncertainWordsArray.value = JSON.parse(uncertainWordsData)
+            uncertainWordsSet.value = new Set(uncertainWordsArray.value)
+        } catch {
+            uncertainWordsArray.value = []
+            uncertainWordsSet.value = new Set()
         }
     }
 
@@ -70,11 +88,17 @@ onMounted(async () => {
         if (event.key === 'Control' || event.key === 'Meta') {
             isCtrlPressed.value = true;
         }
+        if (event.key === '/' || event.keyCode === 191) {
+            isSlashPressed.value = true;
+        }
     });
     window.addEventListener('keyup', (event) => {
         if (event.key === 'Control' || event.key === 'Meta') {
             isCtrlPressed.value = false;
             activeWord.value = null;
+        }
+        if (event.key === '/' || event.keyCode === 191) {
+            isSlashPressed.value = false;
         }
     });
     // Add event listener for document blur
@@ -92,9 +116,12 @@ onMounted(async () => {
 })
 
 watch(knownWordsArray, () => {
-    localStorage.setItem(KEY_LOCALSTORAGE_KEY, JSON.stringify(knownWordsArray.value));
+    localStorage.setItem(KEY_LOCALSTORAGE_KNOWN, JSON.stringify(knownWordsArray.value));
 }, { deep: true });
 
+watch(uncertainWordsArray, () => {
+    localStorage.setItem(KEY_LOCALSTORAGE_UNCERTAIN, JSON.stringify(uncertainWordsArray.value));
+}, { deep: true });
 
 function addKnownWord(word: string) {
     knownWordsSet.value.add(word)
@@ -104,6 +131,16 @@ function addKnownWord(word: string) {
 function deleteKnownWord(word: string) {
     knownWordsSet.value.delete(word)
     knownWordsArray.value = knownWordsArray.value.filter(w => w !== word)
+}
+
+function addUncertainWord(word: string) {
+    uncertainWordsSet.value.add(word)
+    uncertainWordsArray.value.push(word)
+}
+
+function deleteUncertainWord(word: string) {
+    uncertainWordsSet.value.delete(word)
+    uncertainWordsArray.value = uncertainWordsArray.value.filter(w => w !== word)
 }
 
 // Modify handleVocabularyChange to remove URL update
@@ -118,12 +155,24 @@ function reloadPage() {
     currentVocabulary.value = [...currentVocabulary.value] // Create new array to trigger reactivity
 }
 
-// Add a method to handle word click
-function handleWordClick(word: string) {
+// Update handleWordClick to accept event and check isSlashPressed
+function handleWordClick(word: string, event?: MouseEvent) {
+    if (isSlashPressed.value) {
+        if (knownWordsSet.value.has(word)) {
+            deleteKnownWord(word);
+            addUncertainWord(word);
+        } else if (!uncertainWordsSet.value.has(word)) {
+            addUncertainWord(word);
+        }
+        return;
+    }
     if (isCtrlPressed.value) {
         deleteKnownWord(word);
     } else {
-        if (!knownWordsSet.value.has(word)) {
+        if (uncertainWordsSet.value.has(word)) {
+            deleteUncertainWord(word);
+            addKnownWord(word);
+        } else if (!knownWordsSet.value.has(word)) {
             addKnownWord(word);
         }
     }
@@ -135,19 +184,26 @@ function handleWordClick(word: string) {
         <select v-model="selectedVocabulary" @change="handleVocabularyChange" class="form-select form-select-sm">
             <option v-for="(_, name) in VOCABULARY_IMPORTS" :key="name" :value="name">{{ name }}</option>
         </select>
-        <button @click="reloadPage" class="btn btn-primary btn-sm">刷新布局</button>
+
         <div class="card">
             <div class="card-body">
-                <div class="text-muted">已标数量: {{ knownWordsSet.size }} </div>
-                <div class="text-muted">当前词库: {{ currentVocabulary.length }}</div>
-                <hr class="my-2">
-                <div class="text-muted"><a target="_blank" href="https://github.com/KyleBing/vocabulary">github</a></div>
+                <div class="text-muted text-left small">掌握: {{ knownWordsSet.size }} </div>
+                <div class="text-muted text-left small">未定: {{ uncertainWordsSet.size }} </div>
+                <div class="text-muted text-left small">词库: {{ currentVocabulary.length }}</div>
+                <hr class="my-1">
+                <div class="text-muted text-center"><a target="_blank" href="https://github.com/KyleBing/vocabulary" class="small">github</a></div>
             </div>
         </div>
+        <button @click="reloadPage" class="btn btn-danger btn-sm">刷新布局</button>
+
     </div>
     <div class="word-list">
-        <div :class="['word-item', {known: knownWordsSet.has(item.word)}]"
-             @click="handleWordClick(item.word)"
+        <div :class="[
+                'word-item',
+                {known: knownWordsSet.has(item.word)},
+                {uncertain: uncertainWordsSet.has(item.word)},
+            ]"
+             @click="handleWordClick(item.word, $event)"
              @contextmenu.prevent="activeWord = item.word"
              v-for="item in wordsRandom"
              :key="item"
@@ -190,6 +246,10 @@ function handleWordClick(word: string) {
         &.known{
             color: transparentize(white, 0.8);
         }
+        &.uncertain{
+            color: $green;
+            //color: $orange;
+        }
 
         .word{
             @extend .unselectable;
@@ -199,7 +259,7 @@ function handleWordClick(word: string) {
             min-width: 150px;
             color: white;
             z-index: 100;
-            padding: 3px 5px;
+            padding: 5px 5px;
             @include border-radius(5px);
             background-color: transparentize(black, 0.3);
             backdrop-filter: blur(10px);
@@ -240,4 +300,5 @@ function handleWordClick(word: string) {
     flex-direction: column;
     gap: 10px;
 }
+
 </style>
