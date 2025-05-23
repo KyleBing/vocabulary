@@ -1,3 +1,5 @@
+<img src="./public/logo.png" width="120" alt="logo">
+
 # 蚕食单词
 
 ![image](https://github.com/user-attachments/assets/133c44cb-b0a3-469a-a340-30dcaa3d9759)
