@@ -53,6 +53,7 @@ async function loadVocabulary(name: string) {
 const isCtrlPressed = ref(false);
 const isSlashPressed = ref(false); // Track if / is pressed
 const activeWord = ref<string | null>(null);
+const panelPosition = ref({ left: 0 });
 
 // Add a ref for the selected vocabulary name
 const selectedVocabulary = ref('初中')
@@ -177,6 +178,19 @@ function handleWordClick(word: string, event?: MouseEvent) {
         }
     }
 }
+
+function calculatePanelPosition(event: MouseEvent) {
+    const wordElement = event.currentTarget as HTMLElement;
+    const panelWidth = 250; // min-width from CSS
+    const screenWidth = window.innerWidth;
+    const offsetLeft = wordElement.offsetLeft;
+    
+    if (screenWidth > offsetLeft + panelWidth) {
+        panelPosition.value.left = 0;
+    } else {
+        panelPosition.value.left = offsetLeft + panelWidth - screenWidth + 30;
+    }
+}
 </script>
 
 <template>
@@ -204,12 +218,14 @@ function handleWordClick(word: string, event?: MouseEvent) {
                 {uncertain: uncertainWordsSet.has(item.word)},
             ]"
              @click="handleWordClick(item.word, $event)"
-             @contextmenu.prevent="activeWord = item.word"
+             @contextmenu.prevent="(e) => { activeWord = item.word; calculatePanelPosition(e); }"
              v-for="item in wordsRandom"
              :key="item"
         >
             <div class="word">{{ item.word }}</div>
-            <div class="translation-panel" v-if="activeWord === item.word">
+
+
+            <div class="translation-panel" v-if="activeWord === item.word" :style="`left: ${-panelPosition.left}px`">
                 <div class="translation-list">
                     <div class="translation-item" v-for="translation in item.translations" :key="translation.translation">
                         <div class="type">{{ translation.type }}</div>
@@ -294,7 +310,7 @@ function handleWordClick(word: string, event?: MouseEvent) {
     border: 1px solid black;
     padding: 3px 5px;
     background-color: transparentize(white, 0.95);
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     text-align: left;
     &:last-child{
         margin-bottom: 0;
