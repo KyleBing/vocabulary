@@ -3,13 +3,45 @@ import {computed, onMounted, ref, watch} from "vue";
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap styles
 
 const VOCABULARY_IMPORTS = {
-    '初中': () => import('../vocabulary/json_original/json-sentence/BEC_2.json'),
-    '高中': () => import('../vocabulary/json/2-高中-顺序.json'),
-    'CET4': () => import('../vocabulary/json/3-CET4-顺序.json'),
-    'CET6': () => import('../vocabulary/json/4-CET6-顺序.json'),
-    '考研': () => import('../vocabulary/json/5-考研-顺序.json'),
-    '托福': () => import('../vocabulary/json/6-托福-顺序.json'),
-    'SAT': () => import('../vocabulary/json/7-SAT-顺序.json'),
+    '简单单词': {
+        '初中': () => import('../vocabulary/json/1-初中-顺序.json'),
+        '高中': () => import('../vocabulary/json/2-高中-顺序.json'),
+        'CET4': () => import('../vocabulary/json/3-CET4-顺序.json'),
+        'CET6': () => import('../vocabulary/json/4-CET6-顺序.json'),
+        '考研': () => import('../vocabulary/json/5-考研-顺序.json'),
+        '托福': () => import('../vocabulary/json/6-托福-顺序.json'),
+        'SAT': () => import('../vocabulary/json/7-SAT-顺序.json'),
+    },
+    '小学 - 含例句': {
+        'PEP小学3': () => import('../vocabulary/json_original/json-sentence/PEPXiaoXue3_1.json'),
+        'PEP小学4': () => import('../vocabulary/json_original/json-sentence/PEPXiaoXue4_1.json'),
+        'PEP小学5': () => import('../vocabulary/json_original/json-sentence/PEPXiaoXue5_1.json'),
+        'PEP小学6': () => import('../vocabulary/json_original/json-sentence/PEPXiaoXue6_1.json'),
+    },
+    '初中 - 含例句': {
+        'PEP初中7': () => import('../vocabulary/json_original/json-sentence/PEPChuZhong7_1.json'),
+        'PEP初中8': () => import('../vocabulary/json_original/json-sentence/PEPChuZhong8_1.json'),
+        'PEP初中9': () => import('../vocabulary/json_original/json-sentence/PEPChuZhong9_1.json'),
+        '外研社初中': () => import('../vocabulary/json_original/json-sentence/WaiYanSheChuZhong_1.json'),
+    },
+    '高中 - 含例句': {
+        'PEP高中1-6': () => import('../vocabulary/json_original/json-sentence/PEPGaoZhong_1.json'),
+        'PEP高中7-11': () => import('../vocabulary/json_original/json-sentence/PEPGaoZhong_7.json'),
+        '北师大高中': () => import('../vocabulary/json_original/json-sentence/BeiShiGaoZhong_1.json'),
+    },
+    '大学 - 含例句': {
+        'CET4': () => import('../vocabulary/json_original/json-sentence/CET4_1.json'),
+        'CET6': () => import('../vocabulary/json_original/json-sentence/CET6_1.json'),
+        '考研': () => import('../vocabulary/json_original/json-sentence/KaoYan_1.json'),
+    },
+    '国际考试 - 含例句': {
+        '托福-例句': () => import('../vocabulary/json_original/json-sentence/TOEFL_2.json'),
+        '雅思-例句': () => import('../vocabulary/json_original/json-sentence/IELTS_2.json'),
+        'SAT-例句': () => import('../vocabulary/json_original/json-sentence/SAT_2.json'),
+        'GRE-例句': () => import('../vocabulary/json_original/json-sentence/GRE_2.json'),
+        'GMAT-例句': () => import('../vocabulary/json_original/json-sentence/GMAT_2.json'),
+        'BEC-例句': () => import('../vocabulary/json_original/json-sentence/BEC_2.json'),
+    }
 }
 
 const KEY_LOCALSTORAGE_KNOWN = "known_words"
@@ -45,8 +77,14 @@ function shuffle(arr: Array<any>) {
 }
 
 async function loadVocabulary(name: string) {
-    const module = await VOCABULARY_IMPORTS[name]()
-    currentVocabulary.value = module.default
+    // Find the group and module that contains the selected vocabulary
+    for (const group of Object.values(VOCABULARY_IMPORTS)) {
+        if (name in group) {
+            const module = await group[name]()
+            currentVocabulary.value = module.default
+            return
+        }
+    }
 }
 
 // Add a ref to track if the Ctrl key is pressed and active word
@@ -181,10 +219,10 @@ function handleWordClick(word: string, event?: MouseEvent) {
 
 function calculatePanelPosition(event: MouseEvent) {
     const wordElement = event.currentTarget as HTMLElement;
-    const panelWidth = 250; // min-width from CSS
+    const panelWidth = 300; // min-width from CSS
     const screenWidth = window.innerWidth;
     const offsetLeft = wordElement.offsetLeft;
-    
+
     if (screenWidth > offsetLeft + panelWidth) {
         panelPosition.value.left = 0;
     } else {
@@ -196,7 +234,9 @@ function calculatePanelPosition(event: MouseEvent) {
 <template>
     <div class="select-container">
         <select v-model="selectedVocabulary" @change="handleVocabularyChange" class="form-select form-select-sm">
-            <option v-for="(_, name) in VOCABULARY_IMPORTS" :key="name" :value="name">{{ name }}</option>
+            <optgroup v-for="(group, groupName) in VOCABULARY_IMPORTS" :key="groupName" :label="groupName">
+                <option v-for="(_, name) in group" :key="name" :value="name">{{ name }}</option>
+            </optgroup>
         </select>
 
         <div class="card">
@@ -232,7 +272,7 @@ function calculatePanelPosition(event: MouseEvent) {
                         <div class="translation">{{ translation.translation }}</div>
                     </div>
                 </div>
-                <div class="sentence-list">
+                <div class="sentence-list" v-if="item.sentences && item.sentences.length > 0">
                     <div class="sentence-item" v-for="sentence in item.sentences" :key="sentence.sentence">
                         <div class="sentence-en">{{ sentence.sentence }}</div>
                         <div class="sentence-cn">{{ sentence.translation }}</div>
@@ -246,8 +286,7 @@ function calculatePanelPosition(event: MouseEvent) {
 <style scoped lang="scss">
 @import "../scss/plugin";
 .word-list{
-    padding: 20px;
-    padding-bottom: 100px;
+    padding: 20px 10px 300px;
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -285,19 +324,21 @@ function calculatePanelPosition(event: MouseEvent) {
 }
 
 .translation-panel{
-    min-width: 250px;
+    //border: 1px solid transparentize(white, 0.9);
+    border: 1px solid transparentize(white, 0.7);
+    min-width: 300px;
     color: white;
     z-index: 100;
     padding: 5px 5px;
-    @include border-radius(5px);
-    background-color: transparentize(black, 0.3);
+    @include border-radius(9px);
+    background-color: transparentize(black, 0.2);
     backdrop-filter: blur(10px);
     line-height: 1.3;
     text-align: center;
     position: absolute;
     top: 100%;
     left: 0;
-    font-size: 13px;
+    font-size: 1rem;
     display: none; // Hide translation by default
 }
 
@@ -307,7 +348,7 @@ function calculatePanelPosition(event: MouseEvent) {
 
 .sentence-item{
     @include border-radius(5px);
-    border: 1px solid black;
+    border: 1px solid transparentize(white, 0.9);
     padding: 3px 5px;
     background-color: transparentize(white, 0.95);
     margin-bottom: 6px;
@@ -318,14 +359,16 @@ function calculatePanelPosition(event: MouseEvent) {
     .sentence-en{
         margin-bottom: 3px;
         line-height: 1.3;
-        font-size: 14px;
+        font-size: 1rem;
     }
     .sentence-cn{
         color: $text-subtitle;
-        font-size: 13px;
+        font-size: 0.9rem;
     }
 }
 
+.translation-list{
+}
 .translation-item{
     display: flex;
     justify-content: space-between;

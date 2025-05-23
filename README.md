@@ -2,7 +2,7 @@
 
 # 蚕食单词
 
-![image](https://github.com/user-attachments/assets/133c44cb-b0a3-469a-a340-30dcaa3d9759)
+<img width="1624" alt="Screenshot 2025-05-23 at 23 39 02" src="https://github.com/user-attachments/assets/fe0dbf24-55b7-4b2f-bf5b-052e7498b06d" />
 
 
 
