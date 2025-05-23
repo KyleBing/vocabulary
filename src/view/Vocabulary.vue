@@ -3,7 +3,7 @@ import {computed, onMounted, ref, watch} from "vue";
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap styles
 
 const VOCABULARY_IMPORTS = {
-    '初中': () => import('../vocabulary/json/1-初中-顺序.json'),
+    '初中': () => import('../vocabulary/json_original/json-sentence/BEC_2.json'),
     '高中': () => import('../vocabulary/json/2-高中-顺序.json'),
     'CET4': () => import('../vocabulary/json/3-CET4-顺序.json'),
     'CET6': () => import('../vocabulary/json/4-CET6-顺序.json'),
@@ -210,9 +210,17 @@ function handleWordClick(word: string, event?: MouseEvent) {
         >
             <div class="word">{{ item.word }}</div>
             <div class="translation-panel" v-if="activeWord === item.word">
-                <div class="translation-item" v-for="translation in item.translations" :key="translation.translation">
-                    <div class="type">{{ translation.type }}</div>
-                    <div class="translation">{{ translation.translation }}</div>
+                <div class="translation-list">
+                    <div class="translation-item" v-for="translation in item.translations" :key="translation.translation">
+                        <div class="type">{{ translation.type }}</div>
+                        <div class="translation">{{ translation.translation }}</div>
+                    </div>
+                </div>
+                <div class="sentence-list">
+                    <div class="sentence-item" v-for="sentence in item.sentences" :key="sentence.sentence">
+                        <div class="sentence-en">{{ sentence.sentence }}</div>
+                        <div class="sentence-cn">{{ sentence.translation }}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,8 +228,9 @@ function handleWordClick(word: string, event?: MouseEvent) {
 </template>
 
 <style scoped lang="scss">
-@import "@/scss/plugin";
+@import "../scss/plugin";
 .word-list{
+    padding: 20px;
     padding-bottom: 100px;
     display: flex;
     justify-content: center;
@@ -255,24 +264,52 @@ function handleWordClick(word: string, event?: MouseEvent) {
             @extend .unselectable;
             // Add any specific styles for the word if needed
         }
-        .translation-panel{
-            min-width: 150px;
-            color: white;
-            z-index: 100;
-            padding: 5px 5px;
-            @include border-radius(5px);
-            background-color: transparentize(black, 0.3);
-            backdrop-filter: blur(10px);
-            line-height: 1.3;
-            text-align: center;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            font-size: 13px;
-            display: none; // Hide translation by default
-        }
+
     }
 }
+
+.translation-panel{
+    min-width: 250px;
+    color: white;
+    z-index: 100;
+    padding: 5px 5px;
+    @include border-radius(5px);
+    background-color: transparentize(black, 0.3);
+    backdrop-filter: blur(10px);
+    line-height: 1.3;
+    text-align: center;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    font-size: 13px;
+    display: none; // Hide translation by default
+}
+
+.sentence-list{
+    padding: 5px;
+}
+
+.sentence-item{
+    @include border-radius(5px);
+    border: 1px solid black;
+    padding: 3px 5px;
+    background-color: transparentize(white, 0.95);
+    margin-bottom: 10px;
+    text-align: left;
+    &:last-child{
+        margin-bottom: 0;
+    }
+    .sentence-en{
+        margin-bottom: 3px;
+        line-height: 1.3;
+        font-size: 14px;
+    }
+    .sentence-cn{
+        color: $text-subtitle;
+        font-size: 13px;
+    }
+}
+
 .translation-item{
     display: flex;
     justify-content: space-between;
@@ -289,6 +326,8 @@ function handleWordClick(word: string, event?: MouseEvent) {
         text-align: left;
     }
 }
+
+
 
 .select-container {
     z-index: 999;
