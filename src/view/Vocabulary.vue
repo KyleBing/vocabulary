@@ -30,9 +30,9 @@ const VOCABULARY_IMPORTS = {
         '北师大高中': () => import('../vocabulary/json_original/json-sentence/BeiShiGaoZhong_1.json'),
     },
     '大学 - 含例句': {
-        'CET4': () => import('../vocabulary/json_original/json-sentence/CET4_1.json'),
-        'CET6': () => import('../vocabulary/json_original/json-sentence/CET6_1.json'),
-        '考研': () => import('../vocabulary/json_original/json-sentence/KaoYan_1.json'),
+        'CET4-例句': () => import('../vocabulary/json_original/json-sentence/CET4_1.json'),
+        'CET6-例句': () => import('../vocabulary/json_original/json-sentence/CET6_1.json'),
+        '考研-例句': () => import('../vocabulary/json_original/json-sentence/KaoYan_1.json'),
     },
     '国际考试 - 含例句': {
         '托福-例句': () => import('../vocabulary/json_original/json-sentence/TOEFL_2.json'),
