@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {computed, onMounted, ref, watch} from "vue";
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap styles
+import Clipboard from 'clipboard';
 
 const VOCABULARY_IMPORTS = {
     '简单单词': {
@@ -46,6 +47,7 @@ const VOCABULARY_IMPORTS = {
 
 const KEY_LOCALSTORAGE_KNOWN = "known_words"
 const KEY_LOCALSTORAGE_UNCERTAIN = "uncertain_words"
+const KEY_LOCALSTORAGE_LAST_VOCABULARY = "last_vocabulary"
 
 const knownWordsSet = ref(new Set<string>())
 const knownWordsArray = ref<Array<string>>([])
@@ -96,8 +98,14 @@ const panelPosition = ref({ left: 0 });
 // Add a ref for the selected vocabulary name
 const selectedVocabulary = ref('初中')
 
-// Modify onMounted to remove URL parameter handling
+// Modify onMounted to load last vocabulary
 onMounted(async () => {
+    // Load last selected vocabulary
+    const lastVocabulary = localStorage.getItem(KEY_LOCALSTORAGE_LAST_VOCABULARY)
+    if (lastVocabulary) {
+        selectedVocabulary.value = lastVocabulary
+    }
+    
     await loadVocabulary(selectedVocabulary.value)
 
     // 载入用户数据
@@ -161,6 +169,11 @@ watch(knownWordsArray, () => {
 watch(uncertainWordsArray, () => {
     localStorage.setItem(KEY_LOCALSTORAGE_UNCERTAIN, JSON.stringify(uncertainWordsArray.value));
 }, { deep: true });
+
+// Add watch for selectedVocabulary
+watch(selectedVocabulary, (newValue) => {
+    localStorage.setItem(KEY_LOCALSTORAGE_LAST_VOCABULARY, newValue)
+})
 
 function addKnownWord(word: string) {
     knownWordsSet.value.add(word)
@@ -229,6 +242,54 @@ function calculatePanelPosition(event: MouseEvent) {
         panelPosition.value.left = offsetLeft + panelWidth - screenWidth + 30;
     }
 }
+
+function exportConfigToClipboard() {
+    // Deduplicate each array independently
+    const uniqueKnown = Array.from(new Set(knownWordsArray.value));
+    const uniqueUncertain = Array.from(new Set(uncertainWordsArray.value));
+    
+    const config = {
+        known: uniqueKnown,
+        uncertain: uniqueUncertain,
+        lastVocabulary: selectedVocabulary.value
+    };
+    const json = JSON.stringify(config, null, 2);
+    const tempBtn = document.createElement('button');
+    tempBtn.setAttribute('data-clipboard-text', json);
+    document.body.appendChild(tempBtn);
+    const clipboard = new Clipboard(tempBtn);
+    tempBtn.click();
+    clipboard.destroy();
+    document.body.removeChild(tempBtn);
+    alert('配置已复制到剪贴板！');
+}
+
+async function importConfigFromClipboard() {
+    try {
+        const text = await navigator.clipboard.readText();
+        const config = JSON.parse(text);
+        if (Array.isArray(config.known) && Array.isArray(config.uncertain)) {
+            knownWordsArray.value = config.known;
+            knownWordsSet.value = new Set(config.known);
+            uncertainWordsArray.value = config.uncertain;
+            uncertainWordsSet.value = new Set(config.uncertain);
+            localStorage.setItem(KEY_LOCALSTORAGE_KNOWN, JSON.stringify(config.known));
+            localStorage.setItem(KEY_LOCALSTORAGE_UNCERTAIN, JSON.stringify(config.uncertain));
+            
+            // Import last vocabulary if it exists
+            if (config.lastVocabulary) {
+                selectedVocabulary.value = config.lastVocabulary;
+                await loadVocabulary(config.lastVocabulary);
+            }
+            
+            alert('配置已导入！');
+        } else {
+            alert('剪贴板内容格式不正确');
+        }
+    } catch (e) {
+        alert('读取或解析剪贴板内容失败');
+    }
+}
 </script>
 
 <template>
@@ -238,7 +299,8 @@ function calculatePanelPosition(event: MouseEvent) {
                 <option v-for="(_, name) in group" :key="name" :value="name">{{ name }}</option>
             </optgroup>
         </select>
-
+        <button @click="exportConfigToClipboard" class="btn btn-secondary btn-sm">导出配置</button>
+        <button @click="importConfigFromClipboard" class="btn btn-secondary btn-sm">导入配置</button>
         <div class="card">
             <div class="card-body">
                 <div class="text-muted text-left small">掌握: {{ knownWordsSet.size }} </div>
@@ -360,6 +422,7 @@ function calculatePanelPosition(event: MouseEvent) {
         margin-bottom: 3px;
         line-height: 1.3;
         font-size: 1rem;
+        font-family: Arial, sans-serif;
     }
     .sentence-cn{
         color: $text-subtitle;
