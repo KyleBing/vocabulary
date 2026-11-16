@@ -2,7 +2,7 @@
 
 # 蚕食单词
 
-![image](https://github.com/user-attachments/assets/370feef1-2071-42ed-9cb0-fb4db0dfc5c5)
+![image](https://github.com/user-attachments/assets/16403ea9-ed90-43ff-b2af-0f483bc36366)
 
 
 ## 功能

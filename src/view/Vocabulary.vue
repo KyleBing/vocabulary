@@ -757,7 +757,6 @@ function handleWordHover(word: string) {
 }
 
 function handleWordClick(item: VocabItem) {
-    speakWord(item.word, { immediate: true, source: 'click' })
     if (activeItem.value && activeItem.value.word !== item.word) {
         activeItem.value = null
     }
