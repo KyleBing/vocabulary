@@ -127,8 +127,22 @@ const filterMode = ref<FilterMode>('all')
 const activeItem = ref<VocabItem | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
 const panelPos = ref({ left: 16, top: 72 })
+const toolbarRef = ref<HTMLElement | null>(null)
+const pixelMapRef = ref<HTMLCanvasElement | null>(null)
 const toast = ref('')
 let toastTimer = 0
+let pixelMapObserver: ResizeObserver | null = null
+let pixelMapCols = 0
+let pixelMapRows = 0
+let pixelMapMaxRows = 0
+const wordIndexMap = new Map<string, number>()
+
+const PIXEL_KNOWN = '#4CD964'
+const PIXEL_UNCERTAIN = '#FF9500'
+const PIXEL_NEW = 'rgba(255,255,255,0.16)'
+
+const isCtrlPressed = ref(false)
+const isSlashPressed = ref(false)
 
 const vocabularyNames = Object.values(VOCABULARY_IMPORTS).flatMap(group => Object.keys(group))
 
@@ -140,12 +154,7 @@ const bookStats = computed(() => {
         else if (uncertainWordsSet.value.has(item.word)) uncertain++
     }
     const total = currentVocabulary.value.length
-    return {
-        known,
-        uncertain,
-        total,
-        percent: total ? Math.round((known / total) * 100) : 0,
-    }
+    return { known, uncertain, total }
 })
 
 const visibleWords = computed(() => {
@@ -155,18 +164,11 @@ const visibleWords = computed(() => {
 
 const activePhrases = computed(() => (activeItem.value?.phrases || []).filter(item => item.phrase).slice(0, 4))
 const activeSentences = computed(() => (activeItem.value?.sentences || []).filter(item => item.sentence).slice(0, 2))
-const activeStatus = computed(() => {
-    const word = activeItem.value?.word
-    if (!word) return 'new'
-    if (knownWordsSet.value.has(word)) return 'known'
-    if (uncertainWordsSet.value.has(word)) return 'uncertain'
-    return 'new'
-})
 
 const emptyHint = computed(() => {
     if (loading.value) return '词库加载中…'
     if (!currentVocabulary.value.length) return '没有找到这本词库'
-    if (filterMode.value === 'review') return '还没有待复习的词。点开单词，标「再看」。'
+    if (filterMode.value === 'review') return '还没有待复习的词。按住 / 再点单词，标「再看」。'
     return ''
 })
 
@@ -228,44 +230,127 @@ function reshuffle() {
     activeItem.value = null
 }
 
+function pixelColorFor(word: string) {
+    if (knownWordsSet.value.has(word)) return PIXEL_KNOWN
+    if (uncertainWordsSet.value.has(word)) return PIXEL_UNCERTAIN
+    return PIXEL_NEW
+}
+
+function rebuildWordIndexMap() {
+    wordIndexMap.clear()
+    currentVocabulary.value.forEach((item, index) => {
+        wordIndexMap.set(item.word, index)
+    })
+}
+
+function paintPixelAt(index: number) {
+    const canvas = pixelMapRef.value
+    if (!canvas || pixelMapCols <= 0) return
+    const item = currentVocabulary.value[index]
+    if (!item) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const dpr = window.devicePixelRatio || 1
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.fillStyle = pixelColorFor(item.word)
+    ctx.fillRect(index % pixelMapCols, Math.floor(index / pixelMapCols), 1, 1)
+}
+
+function updatePixelForWord(word: string) {
+    const index = wordIndexMap.get(word)
+    if (index === undefined) return
+    paintPixelAt(index)
+}
+
+function repaintPixelMapColors() {
+    const canvas = pixelMapRef.value
+    if (!canvas || pixelMapCols <= 0) return
+    const words = currentVocabulary.value
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const dpr = window.devicePixelRatio || 1
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    for (let i = 0; i < words.length; i++) {
+        ctx.fillStyle = pixelColorFor(words[i].word)
+        ctx.fillRect(i % pixelMapCols, Math.floor(i / pixelMapCols), 1, 1)
+    }
+}
+
+function getHeaderContentHeight() {
+    const toolbar = toolbarRef.value
+    if (!toolbar) return 28
+    let max = 0
+    for (const child of Array.from(toolbar.children)) {
+        if ((child as HTMLElement).classList.contains('pixel-overview')) continue
+        max = Math.max(max, (child as HTMLElement).offsetHeight)
+    }
+    return Math.max(1, max || 28)
+}
+
+function drawPixelMap(force = false) {
+    const canvas = pixelMapRef.value
+    if (!canvas) return
+    const words = currentVocabulary.value
+    const total = words.length
+    const maxRows = getHeaderContentHeight()
+    if (!total) {
+        pixelMapCols = 0
+        pixelMapRows = 0
+        pixelMapMaxRows = maxRows
+        wordIndexMap.clear()
+        canvas.width = 1
+        canvas.height = 1
+        canvas.style.width = '1px'
+        canvas.style.height = '1px'
+        return
+    }
+    // Height locked to header controls; width derived so 1px/word fits without stretching header.
+    const cols = Math.max(1, Math.ceil(total / maxRows))
+    const rows = Math.ceil(total / cols)
+    if (!force && cols === pixelMapCols && rows === pixelMapRows && maxRows === pixelMapMaxRows && wordIndexMap.size === total) {
+        return
+    }
+    pixelMapCols = cols
+    pixelMapRows = rows
+    pixelMapMaxRows = maxRows
+    rebuildWordIndexMap()
+    const dpr = window.devicePixelRatio || 1
+    canvas.width = Math.floor(cols * dpr)
+    canvas.height = Math.floor(rows * dpr)
+    canvas.style.width = `${cols}px`
+    canvas.style.height = `${rows}px`
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.clearRect(0, 0, cols, rows)
+    for (let i = 0; i < total; i++) {
+        ctx.fillStyle = pixelColorFor(words[i].word)
+        ctx.fillRect(i % cols, Math.floor(i / cols), 1, 1)
+    }
+}
+
 function addKnownWord(word: string) {
     knownWordsSet.value.add(word)
     knownWordsArray.value.push(word)
+    updatePixelForWord(word)
 }
 
 function deleteKnownWord(word: string) {
     knownWordsSet.value.delete(word)
     knownWordsArray.value = knownWordsArray.value.filter(w => w !== word)
+    updatePixelForWord(word)
 }
 
 function addUncertainWord(word: string) {
     uncertainWordsSet.value.add(word)
     uncertainWordsArray.value.push(word)
+    updatePixelForWord(word)
 }
 
 function deleteUncertainWord(word: string) {
     uncertainWordsSet.value.delete(word)
     uncertainWordsArray.value = uncertainWordsArray.value.filter(w => w !== word)
-}
-
-function markKnown(word: string) {
-    deleteUncertainWord(word)
-    if (!knownWordsSet.value.has(word)) addKnownWord(word)
-    activeItem.value = null
-    showToast('已标为掌握')
-}
-
-function markUncertain(word: string) {
-    deleteKnownWord(word)
-    if (!uncertainWordsSet.value.has(word)) addUncertainWord(word)
-    activeItem.value = null
-    showToast('已加入待复习')
-}
-
-function clearMark(word: string) {
-    deleteKnownWord(word)
-    deleteUncertainWord(word)
-    showToast('已取消标记')
+    updatePixelForWord(word)
 }
 
 async function placePanel(anchor: HTMLElement) {
@@ -286,13 +371,36 @@ async function placePanel(anchor: HTMLElement) {
     panelPos.value = { left, top }
 }
 
-function handleWordClick(item: VocabItem, event: MouseEvent) {
-    if (activeItem.value?.word === item.word) {
-        activeItem.value = null
+function handleWordHover(word: string) {
+    speakWord(word)
+}
+
+function handleWordClick(item: VocabItem) {
+    speakWord(item.word)
+    if (isSlashPressed.value) {
+        if (knownWordsSet.value.has(item.word)) {
+            deleteKnownWord(item.word)
+            addUncertainWord(item.word)
+        } else if (!uncertainWordsSet.value.has(item.word)) {
+            addUncertainWord(item.word)
+        }
         return
     }
+    if (isCtrlPressed.value) {
+        deleteKnownWord(item.word)
+        return
+    }
+    if (uncertainWordsSet.value.has(item.word)) {
+        deleteUncertainWord(item.word)
+        addKnownWord(item.word)
+    } else if (!knownWordsSet.value.has(item.word)) {
+        addKnownWord(item.word)
+    }
+}
+
+function handleWordContextMenu(item: VocabItem, event: MouseEvent) {
+    event.preventDefault()
     activeItem.value = item
-    speakWord(item.word)
     placePanel(event.currentTarget as HTMLElement)
 }
 
@@ -308,20 +416,30 @@ function setFilter(mode: FilterMode) {
 }
 
 function onKeyDown(event: KeyboardEvent) {
-    const tag = (event.target as HTMLElement | null)?.tagName
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+    if (event.key === 'Control' || event.key === 'Meta') {
+        isCtrlPressed.value = true
+    }
+    if (event.key === '/' || event.keyCode === 191) {
+        isSlashPressed.value = true
+    }
     if (event.key === 'Escape') {
         activeItem.value = null
-        return
     }
-    if (!activeItem.value || event.repeat) return
-    if (event.key === ' ') {
-        event.preventDefault()
-        markKnown(activeItem.value.word)
-    } else if (event.key === '/') {
-        event.preventDefault()
-        markUncertain(activeItem.value.word)
+}
+
+function onKeyUp(event: KeyboardEvent) {
+    if (event.key === 'Control' || event.key === 'Meta') {
+        isCtrlPressed.value = false
+        activeItem.value = null
     }
+    if (event.key === '/' || event.keyCode === 191) {
+        isSlashPressed.value = false
+    }
+}
+
+function onDocumentBlur() {
+    isCtrlPressed.value = false
+    activeItem.value = null
 }
 
 function onDocumentClick(event: MouseEvent) {
@@ -378,6 +496,8 @@ async function importConfigFromClipboard() {
         if (config.lastVocabulary) {
             selectedVocabulary.value = resolveVocabularyName(config.lastVocabulary)
             await loadVocabulary(selectedVocabulary.value)
+        } else {
+            repaintPixelMapColors()
         }
         showToast('配置已导入')
     } catch {
@@ -399,6 +519,10 @@ watch(selectedVocabulary, (newValue) => {
 
 watch(filterMode, (mode) => {
     localStorage.setItem(KEY_LOCALSTORAGE_FILTER, mode)
+})
+
+watch(currentVocabulary, () => {
+    nextTick(() => drawPixelMap(true))
 })
 
 onMounted(async () => {
@@ -429,21 +553,35 @@ onMounted(async () => {
     }
 
     window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('keyup', onKeyUp)
+    window.addEventListener('blur', onDocumentBlur)
     document.addEventListener('click', onDocumentClick)
     window.addEventListener('scroll', onWindowScroll, { passive: true })
+
+    if (toolbarRef.value) {
+        pixelMapObserver = new ResizeObserver(() => {
+            if (getHeaderContentHeight() !== pixelMapMaxRows) drawPixelMap(true)
+        })
+        pixelMapObserver.observe(toolbarRef.value)
+    }
+    nextTick(() => drawPixelMap(true))
 })
 
 onUnmounted(() => {
     window.removeEventListener('keydown', onKeyDown)
+    window.removeEventListener('keyup', onKeyUp)
+    window.removeEventListener('blur', onDocumentBlur)
     document.removeEventListener('click', onDocumentClick)
     window.removeEventListener('scroll', onWindowScroll)
+    pixelMapObserver?.disconnect()
+    pixelMapObserver = null
     window.clearTimeout(toastTimer)
     window.speechSynthesis?.cancel()
 })
 </script>
 
 <template>
-    <header class="toolbar">
+    <header ref="toolbarRef" class="toolbar">
         <a class="brand" target="_blank" href="https://github.com/KyleBing/vocabulary" title="GitHub">
             <img src="./github-mark.png" alt=""/>
         </a>
@@ -454,10 +592,8 @@ onUnmounted(() => {
             </optgroup>
         </select>
 
-        <div class="progress-block" :title="`这本已掌握 ${bookStats.known} / ${bookStats.total}`">
-            <div class="progress-track">
-                <div class="progress-fill" :style="{ width: bookStats.percent + '%' }"></div>
-            </div>
+        <div class="pixel-overview" :title="`会了 ${bookStats.known} · 再看 ${bookStats.uncertain} · 共 ${bookStats.total}`">
+            <canvas ref="pixelMapRef" class="pixel-map"></canvas>
             <div class="progress-label">{{ bookStats.known }} / {{ bookStats.total }}</div>
         </div>
 
@@ -487,7 +623,9 @@ onUnmounted(() => {
                 { uncertain: uncertainWordsSet.has(item.word) },
                 { active: activeItem?.word === item.word },
             ]"
-            @click="handleWordClick(item, $event)"
+            @click="handleWordClick(item)"
+            @contextmenu="handleWordContextMenu(item, $event)"
+            @mouseenter="handleWordHover(item.word)"
         >
             <div class="word unselectable">{{ item.word }}</div>
         </div>
@@ -526,12 +664,7 @@ onUnmounted(() => {
                 <span class="phrase-cn">{{ phrase.translation }}</span>
             </div>
         </div>
-        <div class="detail-actions">
-            <button type="button" :class="['action', 'known', { on: activeStatus === 'known' }]" @click="markKnown(activeItem.word)">会了</button>
-            <button type="button" :class="['action', 'review', { on: activeStatus === 'uncertain' }]" @click="markUncertain(activeItem.word)">再看</button>
-            <button v-if="activeStatus !== 'new'" type="button" class="action clear" @click="clearMark(activeItem.word)">取消</button>
-        </div>
-        <div class="detail-hint">空格 会了 · / 再看 · Esc 关闭</div>
+        <div class="detail-hint">单击 会了 · /+单击 再看 · Ctrl+单击 取消 · 右键 释义</div>
     </div>
 
     <div v-if="toast" class="toast">{{ toast }}</div>
