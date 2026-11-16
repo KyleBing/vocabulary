@@ -33,9 +33,27 @@ html[data-theme="dark"] {
   --toast-text: #1c1c1c;
   --toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   --filter-all-bg: rgba(76, 217, 100, 0.18);
+  --filter-all-text: #{$green};
   --filter-review-bg: rgba(255, 149, 0, 0.18);
+  --filter-review-text: #{$orange};
   --action-text: rgba(255, 255, 255, 0.88);
+  --action-known-idle-bg: var(--surface-chip);
+  --action-known-idle-text: #{$green};
+  --action-known-bg: rgba(76, 217, 100, 0.16);
+  --action-known-text: #{$green};
+  --action-unknown-idle-bg: var(--surface-chip);
+  --action-unknown-idle-text: #{$red};
+  --action-unknown-bg: rgba(255, 59, 48, 0.14);
+  --action-unknown-text: #{$red};
+  --action-review-idle-bg: var(--surface-chip);
+  --action-review-idle-text: #{$orange};
+  --action-review-bg: rgba(255, 149, 0, 0.16);
+  --action-review-text: #{$orange};
+  --toolbar-btn-bg: transparent;
+  --toolbar-btn-text: var(--text-muted);
   --speak-border: rgba(255, 255, 255, 0.18);
+  --sound-menu-bg: rgba(45, 45, 45, 0.78);
+  --pos-color: #{$cyan};
 }
 
 html[data-theme="light"] {
@@ -59,7 +77,7 @@ html[data-theme="light"] {
   --panel-divider: rgba(0, 0, 0, 0.08);
   --panel-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
   --pixel-bg: rgba(0, 0, 0, 0.04);
-  --pixel-new: rgba(0, 0, 0, 0.14);
+  --pixel-new: #1c1c1e;
   --brand-filter: none;
   --select-bg: rgba(0, 0, 0, 0.04);
   --select-border: rgba(0, 0, 0, 0.14);
@@ -67,10 +85,28 @@ html[data-theme="light"] {
   --toast-bg: rgba(28, 28, 30, 0.92);
   --toast-text: #ffffff;
   --toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  --filter-all-bg: rgba(52, 199, 89, 0.16);
-  --filter-review-bg: rgba(255, 149, 0, 0.16);
+  --filter-all-bg: #{$green};
+  --filter-all-text: #111111;
+  --filter-review-bg: #{$orange};
+  --filter-review-text: #111111;
   --action-text: rgba(28, 28, 30, 0.86);
+  --action-known-idle-bg: #{$green};
+  --action-known-idle-text: #111111;
+  --action-known-bg: #{$green};
+  --action-known-text: #111111;
+  --action-unknown-idle-bg: #{$red};
+  --action-unknown-idle-text: #ffffff;
+  --action-unknown-bg: #{$red};
+  --action-unknown-text: #ffffff;
+  --action-review-idle-bg: #{$orange};
+  --action-review-idle-text: #111111;
+  --action-review-bg: #{$orange};
+  --action-review-text: #111111;
+  --toolbar-btn-bg: rgba(28, 28, 30, 0.08);
+  --toolbar-btn-text: #1c1c1e;
   --speak-border: rgba(0, 0, 0, 0.16);
+  --sound-menu-bg: rgba(245, 246, 248, 0.78);
+  --pos-color: #007aff;
 }
 
 // FRAME
