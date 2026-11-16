@@ -1,0 +1,58 @@
+name: Release Offline Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      - name: Pack offline zip
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          NAME="vocabulary-${TAG#v}"
+          cp scripts/offline/start.command scripts/offline/start.bat dist/
+          chmod +x dist/start.command
+          (
+            cd dist
+            zip -r "../${NAME}.zip" .
+          )
+          echo "ASSET_NAME=${NAME}.zip" >> "$GITHUB_ENV"
+          ls -lh "${NAME}.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ASSET_NAME }}
+          generate_release_notes: true
+          body: |
+            ## 离线使用
+            1. 下载并解压 `${{ env.ASSET_NAME }}`
+            2. 双击 `start.command`（Mac）或 `start.bat`（Windows）
+            3. 浏览器会打开本地页面；关闭启动窗口即停止服务
+
+            > 需要本机已安装 Python。也可以直接打开 `index.html`，但部分浏览器对本地文件限制较多。
