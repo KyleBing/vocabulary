@@ -95,93 +95,93 @@ function normalizeVocabularyList(list: unknown[]): VocabItem[] {
 
 const VOCABULARY_IMPORTS = {
     '基础词汇': {
-        '初中词汇': () => import('../vocabulary/json_original/json-full/ChuZhong_2.json'),
-        '高中词汇': () => import('../vocabulary/json_original/json-full/GaoZhong_2.json'),
-        '四级词汇': () => import('../vocabulary/json_original/json-full/CET4_2.json'),
-        '六级词汇': () => import('../vocabulary/json_original/json-full/CET6_2.json'),
-        '考研词汇': () => import('../vocabulary/json_original/json-full/KaoYan_2.json'),
-        '托福词汇': () => import('../vocabulary/json_original/json-full/TOEFL_2.json'),
-        'SAT词汇': () => import('../vocabulary/json_original/json-full/SAT_2.json'),
+        '初中词汇': () => import('../vocabulary/json_original/json-full/ChuZhong_2.json?url'),
+        '高中词汇': () => import('../vocabulary/json_original/json-full/GaoZhong_2.json?url'),
+        '四级词汇': () => import('../vocabulary/json_original/json-full/CET4_2.json?url'),
+        '六级词汇': () => import('../vocabulary/json_original/json-full/CET6_2.json?url'),
+        '考研词汇': () => import('../vocabulary/json_original/json-full/KaoYan_2.json?url'),
+        '托福词汇': () => import('../vocabulary/json_original/json-full/TOEFL_2.json?url'),
+        'SAT词汇': () => import('../vocabulary/json_original/json-full/SAT_2.json?url'),
     },
     '小学词汇': {
-        '人教版小学三年级上册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue3_1.json'),
-        '人教版小学三年级下册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue3_2.json'),
-        '人教版小学四年级上册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue4_1.json'),
-        '人教版小学四年级下册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue4_2.json'),
-        '人教版小学五年级上册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue5_1.json'),
-        '人教版小学五年级下册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue5_2.json'),
-        '人教版小学六年级上册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue6_1.json'),
-        '人教版小学六年级下册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue6_2.json'),
+        '人教版小学三年级上册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue3_1.json?url'),
+        '人教版小学三年级下册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue3_2.json?url'),
+        '人教版小学四年级上册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue4_1.json?url'),
+        '人教版小学四年级下册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue4_2.json?url'),
+        '人教版小学五年级上册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue5_1.json?url'),
+        '人教版小学五年级下册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue5_2.json?url'),
+        '人教版小学六年级上册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue6_1.json?url'),
+        '人教版小学六年级下册': () => import('../vocabulary/json_original/json-full/PEPXiaoXue6_2.json?url'),
     },
     '初中词汇': {
-        '人教版初中七年级上册': () => import('../vocabulary/json_original/json-full/PEPChuZhong7_1.json'),
-        '人教版初中七年级下册': () => import('../vocabulary/json_original/json-full/PEPChuZhong7_2.json'),
-        '人教版初中八年级上册': () => import('../vocabulary/json_original/json-full/PEPChuZhong8_1.json'),
-        '人教版初中八年级下册': () => import('../vocabulary/json_original/json-full/PEPChuZhong8_2.json'),
-        '人教版初中九年级': () => import('../vocabulary/json_original/json-full/PEPChuZhong9_1.json'),
-        '外研社初中一年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_1.json'),
-        '外研社初中二年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_2.json'),
-        '外研社初中三年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_3.json'),
-        '外研社初中四年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_4.json'),
-        '外研社初中五年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_5.json'),
-        '外研社初中六年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_6.json'),
+        '人教版初中七年级上册': () => import('../vocabulary/json_original/json-full/PEPChuZhong7_1.json?url'),
+        '人教版初中七年级下册': () => import('../vocabulary/json_original/json-full/PEPChuZhong7_2.json?url'),
+        '人教版初中八年级上册': () => import('../vocabulary/json_original/json-full/PEPChuZhong8_1.json?url'),
+        '人教版初中八年级下册': () => import('../vocabulary/json_original/json-full/PEPChuZhong8_2.json?url'),
+        '人教版初中九年级': () => import('../vocabulary/json_original/json-full/PEPChuZhong9_1.json?url'),
+        '外研社初中一年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_1.json?url'),
+        '外研社初中二年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_2.json?url'),
+        '外研社初中三年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_3.json?url'),
+        '外研社初中四年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_4.json?url'),
+        '外研社初中五年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_5.json?url'),
+        '外研社初中六年级': () => import('../vocabulary/json_original/json-full/WaiYanSheChuZhong_6.json?url'),
     },
     '高中词汇': {
-        '人教版高中必修1': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_1.json'),
-        '人教版高中必修2': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_2.json'),
-        '人教版高中必修3': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_3.json'),
-        '人教版高中必修4': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_4.json'),
-        '人教版高中必修5': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_5.json'),
-        '人教版高中选修6': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_6.json'),
-        '人教版高中选修7': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_7.json'),
-        '人教版高中选修8': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_8.json'),
-        '人教版高中选修9': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_9.json'),
-        '人教版高中选修10': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_10.json'),
-        '人教版高中选修11': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_11.json'),
-        '北师大版高中必修1': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_1.json'),
-        '北师大版高中必修2': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_2.json'),
-        '北师大版高中必修3': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_3.json'),
-        '北师大版高中必修4': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_4.json'),
-        '北师大版高中必修5': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_5.json'),
-        '北师大版高中选修6': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_6.json'),
-        '北师大版高中选修7': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_7.json'),
-        '北师大版高中选修8': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_8.json'),
-        '北师大版高中选修9': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_9.json'),
-        '北师大版高中选修10': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_10.json'),
-        '北师大版高中选修11': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_11.json'),
+        '人教版高中必修1': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_1.json?url'),
+        '人教版高中必修2': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_2.json?url'),
+        '人教版高中必修3': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_3.json?url'),
+        '人教版高中必修4': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_4.json?url'),
+        '人教版高中必修5': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_5.json?url'),
+        '人教版高中选修6': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_6.json?url'),
+        '人教版高中选修7': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_7.json?url'),
+        '人教版高中选修8': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_8.json?url'),
+        '人教版高中选修9': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_9.json?url'),
+        '人教版高中选修10': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_10.json?url'),
+        '人教版高中选修11': () => import('../vocabulary/json_original/json-full/PEPGaoZhong_11.json?url'),
+        '北师大版高中必修1': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_1.json?url'),
+        '北师大版高中必修2': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_2.json?url'),
+        '北师大版高中必修3': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_3.json?url'),
+        '北师大版高中必修4': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_4.json?url'),
+        '北师大版高中必修5': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_5.json?url'),
+        '北师大版高中选修6': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_6.json?url'),
+        '北师大版高中选修7': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_7.json?url'),
+        '北师大版高中选修8': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_8.json?url'),
+        '北师大版高中选修9': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_9.json?url'),
+        '北师大版高中选修10': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_10.json?url'),
+        '北师大版高中选修11': () => import('../vocabulary/json_original/json-full/BeiShiGaoZhong_11.json?url'),
     },
     '大学词汇': {
-        '四级真题核心词': () => import('../vocabulary/json_original/json-full/CET4_1.json'),
-        '四级英语词汇': () => import('../vocabulary/json_original/json-full/CET4_2.json'),
-        '六级真题核心词': () => import('../vocabulary/json_original/json-full/CET6_1.json'),
-        '六级英语词汇': () => import('../vocabulary/json_original/json-full/CET6_2.json'),
-        '考研必考词汇': () => import('../vocabulary/json_original/json-full/KaoYan_1.json'),
-        '考研英语词汇': () => import('../vocabulary/json_original/json-full/KaoYan_2.json'),
+        '四级真题核心词': () => import('../vocabulary/json_original/json-full/CET4_1.json?url'),
+        '四级英语词汇': () => import('../vocabulary/json_original/json-full/CET4_2.json?url'),
+        '六级真题核心词': () => import('../vocabulary/json_original/json-full/CET6_1.json?url'),
+        '六级英语词汇': () => import('../vocabulary/json_original/json-full/CET6_2.json?url'),
+        '考研必考词汇': () => import('../vocabulary/json_original/json-full/KaoYan_1.json?url'),
+        '考研英语词汇': () => import('../vocabulary/json_original/json-full/KaoYan_2.json?url'),
     },
     '国际考试': {
-        'TOEFL词汇': () => import('../vocabulary/json_original/json-full/TOEFL_2.json'),
-        '雅思词汇': () => import('../vocabulary/json_original/json-full/IELTS_2.json'),
-        'SAT词汇': () => import('../vocabulary/json_original/json-full/SAT_2.json'),
-        'GRE词汇': () => import('../vocabulary/json_original/json-full/GRE_2.json'),
-        'GMAT词汇': () => import('../vocabulary/json_original/json-full/GMAT_2.json'),
-        '商务英语词汇': () => import('../vocabulary/json_original/json-full/BEC_2.json'),
-        '专四核心词汇-1': () => import('../vocabulary/json_original/json-full/Level4_1.json'),
-        '专四核心词汇-2': () => import('../vocabulary/json_original/json-full/Level4_2.json'),
-        '专八核心词汇-1': () => import('../vocabulary/json_original/json-full/Level8_1.json'),
-        '专八核心词汇-2': () => import('../vocabulary/json_original/json-full/Level8_2.json'),
+        'TOEFL词汇': () => import('../vocabulary/json_original/json-full/TOEFL_2.json?url'),
+        '雅思词汇': () => import('../vocabulary/json_original/json-full/IELTS_2.json?url'),
+        'SAT词汇': () => import('../vocabulary/json_original/json-full/SAT_2.json?url'),
+        'GRE词汇': () => import('../vocabulary/json_original/json-full/GRE_2.json?url'),
+        'GMAT词汇': () => import('../vocabulary/json_original/json-full/GMAT_2.json?url'),
+        '商务英语词汇': () => import('../vocabulary/json_original/json-full/BEC_2.json?url'),
+        '专四核心词汇-1': () => import('../vocabulary/json_original/json-full/Level4_1.json?url'),
+        '专四核心词汇-2': () => import('../vocabulary/json_original/json-full/Level4_2.json?url'),
+        '专八核心词汇-1': () => import('../vocabulary/json_original/json-full/Level8_1.json?url'),
+        '专八核心词汇-2': () => import('../vocabulary/json_original/json-full/Level8_2.json?url'),
     },
     '新东方': {
-        '初中词汇（新东方）': () => import('../vocabulary/json_original/json-full/ChuZhong_3.json'),
-        '高中词汇（新东方）': () => import('../vocabulary/json_original/json-full/GaoZhong_3.json'),
-        '四级词汇（新东方）': () => import('../vocabulary/json_original/json-full/CET4_3.json'),
-        '六级词汇（新东方）': () => import('../vocabulary/json_original/json-full/CET6_3.json'),
-        '考研词汇（新东方）': () => import('../vocabulary/json_original/json-full/KaoYan_3.json'),
-        'TOEFL词汇（新东方）': () => import('../vocabulary/json_original/json-full/TOEFL_3.json'),
-        '雅思词汇（新东方）': () => import('../vocabulary/json_original/json-full/IELTS_3.json'),
-        'SAT词汇（新东方）': () => import('../vocabulary/json_original/json-full/SAT_3.json'),
-        'GRE词汇（新东方）': () => import('../vocabulary/json_original/json-full/GRE_3.json'),
-        'GMAT词汇（新东方）': () => import('../vocabulary/json_original/json-full/GMAT_3.json'),
-        'BEC词汇（新东方）': () => import('../vocabulary/json_original/json-full/BEC_3.json'),
+        '初中词汇（新东方）': () => import('../vocabulary/json_original/json-full/ChuZhong_3.json?url'),
+        '高中词汇（新东方）': () => import('../vocabulary/json_original/json-full/GaoZhong_3.json?url'),
+        '四级词汇（新东方）': () => import('../vocabulary/json_original/json-full/CET4_3.json?url'),
+        '六级词汇（新东方）': () => import('../vocabulary/json_original/json-full/CET6_3.json?url'),
+        '考研词汇（新东方）': () => import('../vocabulary/json_original/json-full/KaoYan_3.json?url'),
+        'TOEFL词汇（新东方）': () => import('../vocabulary/json_original/json-full/TOEFL_3.json?url'),
+        '雅思词汇（新东方）': () => import('../vocabulary/json_original/json-full/IELTS_3.json?url'),
+        'SAT词汇（新东方）': () => import('../vocabulary/json_original/json-full/SAT_3.json?url'),
+        'GRE词汇（新东方）': () => import('../vocabulary/json_original/json-full/GRE_3.json?url'),
+        'GMAT词汇（新东方）': () => import('../vocabulary/json_original/json-full/GMAT_3.json?url'),
+        'BEC词汇（新东方）': () => import('../vocabulary/json_original/json-full/BEC_3.json?url'),
     }
 }
 
@@ -449,19 +449,30 @@ async function loadVocabulary(name: string) {
     loading.value = true
     activeItem.value = null
     searchQuery.value = ''
-    for (const group of Object.values(VOCABULARY_IMPORTS)) {
-        if (name in group) {
-            const module = await group[name]()
-            const list = normalizeVocabularyList(module.default as unknown[])
-            currentVocabulary.value = list
-            shuffledWords.value = shuffle(list)
-            loading.value = false
-            return
+    try {
+        for (const group of Object.values(VOCABULARY_IMPORTS)) {
+            if (name in group) {
+                const module = await group[name]()
+                const url = module.default as string
+                const res = await fetch(url)
+                if (!res.ok) throw new Error(`load failed: ${url}`)
+                const raw = await res.json()
+                const list = normalizeVocabularyList(raw as unknown[])
+                currentVocabulary.value = list
+                shuffledWords.value = shuffle(list)
+                loading.value = false
+                return
+            }
         }
+        currentVocabulary.value = []
+        shuffledWords.value = []
+    } catch (error) {
+        console.error(error)
+        currentVocabulary.value = []
+        shuffledWords.value = []
+    } finally {
+        loading.value = false
     }
-    currentVocabulary.value = []
-    shuffledWords.value = []
-    loading.value = false
 }
 
 function reshuffle() {
