@@ -2,11 +2,84 @@
 @import "plugin";
 @import "normalize";
 
+:root,
+html[data-theme="dark"] {
+  --page-bg: #373737;
+  --toolbar-bg: rgba(28, 28, 28, 0.92);
+  --toolbar-border: rgba(255, 255, 255, 0.08);
+  --text: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.72);
+  --text-soft: rgba(255, 255, 255, 0.62);
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-faint: rgba(255, 255, 255, 0.38);
+  --text-dim: rgba(255, 255, 255, 0.28);
+  --word-known: rgba(255, 255, 255, 0.2);
+  --text-strong: rgba(255, 255, 255, 0.9);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --surface-active: rgba(255, 255, 255, 0.14);
+  --surface-soft: rgba(255, 255, 255, 0.05);
+  --surface-chip: rgba(255, 255, 255, 0.08);
+  --panel-bg: rgba(18, 18, 18, 0.94);
+  --panel-border: rgba(255, 255, 255, 0.14);
+  --panel-divider: rgba(255, 255, 255, 0.12);
+  --panel-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  --pixel-bg: rgba(255, 255, 255, 0.04);
+  --pixel-new: rgba(255, 255, 255, 0.16);
+  --brand-filter: invert(1);
+  --select-bg: rgba(255, 255, 255, 0.08);
+  --select-border: rgba(255, 255, 255, 0.16);
+  --select-arrow: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  --toast-bg: rgba(255, 255, 255, 0.94);
+  --toast-text: #1c1c1c;
+  --toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --filter-all-bg: rgba(76, 217, 100, 0.18);
+  --filter-review-bg: rgba(255, 149, 0, 0.18);
+  --action-text: rgba(255, 255, 255, 0.88);
+  --speak-border: rgba(255, 255, 255, 0.18);
+}
+
+html[data-theme="light"] {
+  --page-bg: #ffffff;
+  --toolbar-bg: rgba(236, 237, 240, 0.96);
+  --toolbar-border: rgba(0, 0, 0, 0.1);
+  --text: #1c1c1e;
+  --text-muted: rgba(28, 28, 30, 0.7);
+  --text-soft: rgba(28, 28, 30, 0.58);
+  --text-secondary: rgba(28, 28, 30, 0.52);
+  --text-faint: rgba(28, 28, 30, 0.4);
+  --text-dim: rgba(28, 28, 30, 0.28);
+  --word-known: rgba(28, 28, 30, 0.12);
+  --text-strong: rgba(28, 28, 30, 0.92);
+  --surface-hover: rgba(0, 0, 0, 0.05);
+  --surface-active: rgba(0, 0, 0, 0.09);
+  --surface-soft: rgba(0, 0, 0, 0.04);
+  --surface-chip: rgba(0, 0, 0, 0.05);
+  --panel-bg: rgba(255, 255, 255, 0.96);
+  --panel-border: rgba(0, 0, 0, 0.1);
+  --panel-divider: rgba(0, 0, 0, 0.08);
+  --panel-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  --pixel-bg: rgba(0, 0, 0, 0.04);
+  --pixel-new: rgba(0, 0, 0, 0.14);
+  --brand-filter: none;
+  --select-bg: rgba(0, 0, 0, 0.04);
+  --select-border: rgba(0, 0, 0, 0.14);
+  --select-arrow: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231c1c1e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  --toast-bg: rgba(28, 28, 30, 0.92);
+  --toast-text: #ffffff;
+  --toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --filter-all-bg: rgba(52, 199, 89, 0.16);
+  --filter-review-bg: rgba(255, 149, 0, 0.16);
+  --action-text: rgba(28, 28, 30, 0.86);
+  --speak-border: rgba(0, 0, 0, 0.16);
+}
+
 // FRAME
 body{
   position: relative;
-  background-color: $bg-main !important;
+  background-color: var(--page-bg, #{$bg-main}) !important;
+  color: var(--text, #fff);
   font-family: '微软雅黑', sans-serif !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .diary {
@@ -71,3 +144,9 @@ body{
 
 
 @import "dark";
+
+// Theme toggle owns page colors (overrides prefers-color-scheme helpers above).
+body {
+  background-color: var(--page-bg, #{$bg-main}) !important;
+  color: var(--text, #fff);
+}

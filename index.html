@@ -27,6 +27,12 @@
     <link rel="mask-icon" href="./appicon-apple.png">
 
     <title>单词</title>
+    <script>
+        document.documentElement.setAttribute(
+            'data-theme',
+            localStorage.getItem('vocabulary_theme') === 'light' ? 'light' : 'dark'
+        )
+    </script>
 </head>
 <body>
 <div id="app"></div>

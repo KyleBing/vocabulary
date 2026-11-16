@@ -14,6 +14,7 @@ type VocabItem = {
     sentences?: Sentence[]
 }
 type FilterMode = 'all' | 'review'
+type ThemeMode = 'dark' | 'light'
 
 const VOCABULARY_IMPORTS = {
     '基础词汇': {
@@ -111,7 +112,17 @@ const KEY_LOCALSTORAGE_KNOWN = "known_words"
 const KEY_LOCALSTORAGE_UNCERTAIN = "uncertain_words"
 const KEY_LOCALSTORAGE_LAST_VOCABULARY = "last_vocabulary"
 const KEY_LOCALSTORAGE_FILTER = "vocabulary_filter"
+const KEY_LOCALSTORAGE_THEME = "vocabulary_theme"
+const KEY_LOCALSTORAGE_SOUND_MUTED = "vocabulary_sound_muted"
 const DEFAULT_VOCABULARY = "初中词汇"
+
+function readStoredTheme(): ThemeMode {
+    return localStorage.getItem(KEY_LOCALSTORAGE_THEME) === 'light' ? 'light' : 'dark'
+}
+
+function applyTheme(mode: ThemeMode) {
+    document.documentElement.setAttribute('data-theme', mode)
+}
 
 const knownWordsSet = ref(new Set<string>())
 const knownWordsArray = ref<Array<string>>([])
@@ -123,6 +134,9 @@ const shuffledWords = ref<VocabItem[]>([])
 const loading = ref(true)
 const selectedVocabulary = ref(DEFAULT_VOCABULARY)
 const filterMode = ref<FilterMode>('all')
+const theme = ref<ThemeMode>(readStoredTheme())
+applyTheme(theme.value)
+const soundMuted = ref(localStorage.getItem(KEY_LOCALSTORAGE_SOUND_MUTED) === '1')
 
 const activeItem = ref<VocabItem | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
@@ -130,7 +144,10 @@ const panelPos = ref({ left: 16, top: 72 })
 const toolbarRef = ref<HTMLElement | null>(null)
 const pixelMapRef = ref<HTMLCanvasElement | null>(null)
 const toast = ref('')
+const speakingWord = ref('')
 let toastTimer = 0
+let speakTimer = 0
+let lastSpokenWord = ''
 let pixelMapObserver: ResizeObserver | null = null
 let pixelMapCols = 0
 let pixelMapRows = 0
@@ -139,7 +156,6 @@ const wordIndexMap = new Map<string, number>()
 
 const PIXEL_KNOWN = '#4CD964'
 const PIXEL_UNCERTAIN = '#FF9500'
-const PIXEL_NEW = 'rgba(255,255,255,0.16)'
 
 const isCtrlPressed = ref(false)
 const isSlashPressed = ref(false)
@@ -164,6 +180,13 @@ const visibleWords = computed(() => {
 
 const activePhrases = computed(() => (activeItem.value?.phrases || []).filter(item => item.phrase).slice(0, 4))
 const activeSentences = computed(() => (activeItem.value?.sentences || []).filter(item => item.sentence).slice(0, 2))
+const activeStatus = computed(() => {
+    const word = activeItem.value?.word
+    if (!word) return 'new'
+    if (knownWordsSet.value.has(word)) return 'known'
+    if (uncertainWordsSet.value.has(word)) return 'uncertain'
+    return 'new'
+})
 
 const emptyHint = computed(() => {
     if (loading.value) return '词库加载中…'
@@ -197,14 +220,59 @@ function showToast(message: string) {
     }, 2200)
 }
 
-function speakWord(word: string) {
-    if (!word || !('speechSynthesis' in window)) return
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(word)
-    utterance.lang = 'en-US'
-    utterance.rate = 0.92
-    utterance.volume = 0.8
-    window.speechSynthesis.speak(utterance)
+const HOVER_SPEAK_DELAY_MS = 480
+
+function clearSpeakingWord(word?: string) {
+    if (!word || speakingWord.value === word) speakingWord.value = ''
+    if (!word || lastSpokenWord === word) lastSpokenWord = ''
+}
+
+function speakWord(word: string, immediate = false) {
+    if (!word || !('speechSynthesis' in window) || soundMuted.value) return
+    window.clearTimeout(speakTimer)
+    const play = () => {
+        if (soundMuted.value) return
+        const synth = window.speechSynthesis
+        // Chrome can get stuck in paused state after rapid cancel/speak.
+        if (synth.paused) synth.resume()
+        if (synth.speaking || synth.pending) synth.cancel()
+        speakTimer = window.setTimeout(() => {
+            if (soundMuted.value) return
+            if (synth.paused) synth.resume()
+            const utterance = new SpeechSynthesisUtterance(word)
+            utterance.lang = 'en-US'
+            utterance.rate = 0.92
+            utterance.volume = 0.8
+            utterance.onstart = () => {
+                speakingWord.value = word
+                lastSpokenWord = word
+            }
+            utterance.onend = () => clearSpeakingWord(word)
+            utterance.onerror = () => clearSpeakingWord(word)
+            speakingWord.value = word
+            lastSpokenWord = word
+            synth.speak(utterance)
+        }, 40)
+    }
+    if (immediate) {
+        play()
+        return
+    }
+    // Only speak after the pointer stays on the word for a while.
+    if (word === lastSpokenWord && (window.speechSynthesis.speaking || window.speechSynthesis.pending)) return
+    speakTimer = window.setTimeout(play, HOVER_SPEAK_DELAY_MS)
+}
+
+function cancelHoverSpeak() {
+    window.clearTimeout(speakTimer)
+}
+
+function toggleSoundMute() {
+    soundMuted.value = !soundMuted.value
+    localStorage.setItem(KEY_LOCALSTORAGE_SOUND_MUTED, soundMuted.value ? '1' : '0')
+    window.clearTimeout(speakTimer)
+    clearSpeakingWord()
+    window.speechSynthesis?.cancel()
 }
 
 async function loadVocabulary(name: string) {
@@ -230,10 +298,22 @@ function reshuffle() {
     activeItem.value = null
 }
 
+function pixelNewColor() {
+    const value = getComputedStyle(document.documentElement).getPropertyValue('--pixel-new').trim()
+    return value || 'rgba(255,255,255,0.16)'
+}
+
 function pixelColorFor(word: string) {
     if (knownWordsSet.value.has(word)) return PIXEL_KNOWN
     if (uncertainWordsSet.value.has(word)) return PIXEL_UNCERTAIN
-    return PIXEL_NEW
+    return pixelNewColor()
+}
+
+function toggleTheme() {
+    theme.value = theme.value === 'dark' ? 'light' : 'dark'
+    localStorage.setItem(KEY_LOCALSTORAGE_THEME, theme.value)
+    applyTheme(theme.value)
+    nextTick(repaintPixelMapColors)
 }
 
 function rebuildWordIndexMap() {
@@ -353,6 +433,24 @@ function deleteUncertainWord(word: string) {
     updatePixelForWord(word)
 }
 
+function markKnown(word: string) {
+    deleteUncertainWord(word)
+    if (!knownWordsSet.value.has(word)) addKnownWord(word)
+    activeItem.value = null
+}
+
+function markUnknown(word: string) {
+    deleteKnownWord(word)
+    deleteUncertainWord(word)
+    activeItem.value = null
+}
+
+function markUncertain(word: string) {
+    deleteKnownWord(word)
+    if (!uncertainWordsSet.value.has(word)) addUncertainWord(word)
+    activeItem.value = null
+}
+
 async function placePanel(anchor: HTMLElement) {
     await nextTick()
     const panel = panelRef.value
@@ -372,11 +470,14 @@ async function placePanel(anchor: HTMLElement) {
 }
 
 function handleWordHover(word: string) {
-    speakWord(word)
+    speakWord(word, false)
 }
 
 function handleWordClick(item: VocabItem) {
-    speakWord(item.word)
+    speakWord(item.word, true)
+    if (activeItem.value && activeItem.value.word !== item.word) {
+        activeItem.value = null
+    }
     if (isSlashPressed.value) {
         if (knownWordsSet.value.has(item.word)) {
             deleteKnownWord(item.word)
@@ -453,19 +554,113 @@ function onWindowScroll() {
     if (activeItem.value) activeItem.value = null
 }
 
-function exportConfigToClipboard() {
-    const config = {
-        known: Array.from(new Set(knownWordsArray.value)),
-        uncertain: Array.from(new Set(uncertainWordsArray.value)),
-        lastVocabulary: selectedVocabulary.value
+const CONFIG_PACK_PREFIX = 'VB2.'
+
+function normalizeWordList(value: unknown): string[] {
+    if (Array.isArray(value)) {
+        return value.filter((word): word is string => typeof word === 'string' && word.length > 0)
     }
-    const json = JSON.stringify(config, null, 2)
-    const write = navigator.clipboard?.writeText(json)
-    if (write) {
-        write.then(() => showToast('配置已复制')).catch(() => copyWithClipboard(json))
-        return
+    if (typeof value === 'string') {
+        return value.split(/\n+/).map(word => word.trim()).filter(Boolean)
     }
-    copyWithClipboard(json)
+    return []
+}
+
+function bytesToBase64Url(bytes: Uint8Array) {
+    let binary = ''
+    const chunk = 0x8000
+    for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+}
+
+function base64UrlToBytes(base64url: string) {
+    const normalized = base64url.replace(/-/g, '+').replace(/_/g, '/').replace(/=+$/g, '')
+    const padded = normalized + '==='.slice((normalized.length + 3) % 4)
+    const binary = atob(padded)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+    return bytes
+}
+
+async function compressBytes(bytes: Uint8Array) {
+    if (typeof CompressionStream === 'undefined') return null
+    const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'))
+    return new Uint8Array(await new Response(stream).arrayBuffer())
+}
+
+async function decompressBytes(bytes: Uint8Array) {
+    if (typeof DecompressionStream === 'undefined') throw new Error('no decompress')
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))
+    return new Uint8Array(await new Response(stream).arrayBuffer())
+}
+
+async function packConfigForExport() {
+    const known = Array.from(new Set(knownWordsArray.value))
+    const uncertain = Array.from(new Set(uncertainWordsArray.value))
+    const lastVocabulary = selectedVocabulary.value
+    const json = JSON.stringify({
+        known: known.join('\n'),
+        uncertain: uncertain.join('\n'),
+        lastVocabulary,
+    })
+    const raw = new TextEncoder().encode([lastVocabulary, known.join('\n'), uncertain.join('\n')].join('\0'))
+    const compressed = await compressBytes(raw)
+    if (!compressed) return json
+    return CONFIG_PACK_PREFIX + bytesToBase64Url(compressed)
+}
+
+async function unpackConfigText(text: string): Promise<{ known: string[]; uncertain: string[]; lastVocabulary?: string }> {
+    const trimmed = text.trim()
+    if (trimmed.startsWith(CONFIG_PACK_PREFIX)) {
+        const bytes = await decompressBytes(base64UrlToBytes(trimmed.slice(CONFIG_PACK_PREFIX.length)))
+        const raw = new TextDecoder().decode(bytes)
+        const [lastVocabulary = '', knownText = '', uncertainText = ''] = raw.split('\0')
+        return {
+            known: normalizeWordList(knownText),
+            uncertain: normalizeWordList(uncertainText),
+            lastVocabulary: lastVocabulary || undefined,
+        }
+    }
+    const config = JSON.parse(trimmed)
+    if (!('known' in config) || !('uncertain' in config)) throw new Error('bad format')
+    return {
+        known: normalizeWordList(config.known),
+        uncertain: normalizeWordList(config.uncertain),
+        lastVocabulary: typeof config.lastVocabulary === 'string' ? config.lastVocabulary : undefined,
+    }
+}
+
+async function applyImportedConfig(knownRaw: string[], uncertainRaw: string[], lastVocabulary?: string) {
+    const known = Array.from(new Set(knownRaw))
+    const knownSet = new Set(known)
+    const uncertain = Array.from(new Set(uncertainRaw)).filter(word => !knownSet.has(word))
+    knownWordsArray.value = known
+    knownWordsSet.value = knownSet
+    uncertainWordsArray.value = uncertain
+    uncertainWordsSet.value = new Set(uncertain)
+    if (lastVocabulary) {
+        selectedVocabulary.value = resolveVocabularyName(lastVocabulary)
+        await loadVocabulary(selectedVocabulary.value)
+    } else {
+        repaintPixelMapColors()
+    }
+}
+
+async function exportConfigToClipboard() {
+    try {
+        const packed = await packConfigForExport()
+        const write = navigator.clipboard?.writeText(packed)
+        if (write) {
+            await write
+            showToast('配置已复制')
+            return
+        }
+        copyWithClipboard(packed)
+    } catch {
+        showToast('导出失败')
+    }
 }
 
 function copyWithClipboard(text: string) {
@@ -482,23 +677,8 @@ function copyWithClipboard(text: string) {
 async function importConfigFromClipboard() {
     try {
         const text = await navigator.clipboard.readText()
-        const config = JSON.parse(text)
-        if (!Array.isArray(config.known) || !Array.isArray(config.uncertain)) {
-            showToast('剪贴板内容格式不对')
-            return
-        }
-        const known = config.known.filter((word: unknown) => typeof word === 'string')
-        const uncertain = config.uncertain.filter((word: unknown) => typeof word === 'string' && !known.includes(word))
-        knownWordsArray.value = known
-        knownWordsSet.value = new Set(known)
-        uncertainWordsArray.value = uncertain
-        uncertainWordsSet.value = new Set(uncertain)
-        if (config.lastVocabulary) {
-            selectedVocabulary.value = resolveVocabularyName(config.lastVocabulary)
-            await loadVocabulary(selectedVocabulary.value)
-        } else {
-            repaintPixelMapColors()
-        }
+        const config = await unpackConfigText(text)
+        await applyImportedConfig(config.known, config.uncertain, config.lastVocabulary)
         showToast('配置已导入')
     } catch {
         showToast('读取剪贴板失败')
@@ -576,6 +756,8 @@ onUnmounted(() => {
     pixelMapObserver?.disconnect()
     pixelMapObserver = null
     window.clearTimeout(toastTimer)
+    window.clearTimeout(speakTimer)
+    speakingWord.value = ''
     window.speechSynthesis?.cancel()
 })
 </script>
@@ -599,13 +781,34 @@ onUnmounted(() => {
 
         <div class="filters">
             <button :class="{ on: filterMode === 'all' }" @click="setFilter('all')">全部</button>
-            <button :class="{ on: filterMode === 'review' }" @click="setFilter('review')">
+            <button class="review-filter" :class="{ on: filterMode === 'review' }" @click="setFilter('review')">
                 待复习
                 <span class="count">{{ bookStats.uncertain }}</span>
             </button>
         </div>
 
         <div class="toolbar-actions">
+            <button
+                class="sound-toggle"
+                type="button"
+                :class="{ muted: soundMuted }"
+                :title="soundMuted ? '开启发音' : '静音'"
+                :aria-label="soundMuted ? '开启发音' : '静音'"
+                @click="toggleSoundMute"
+            >
+                <svg class="sound-toggle-icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M525.541411 131.503033l-230.494605 148.031475h-114.988917c-63.895239 0-115.679649 51.14996-115.679649 115.219161v230.898811c0 63.664995 51.150984 115.219161 115.679649 115.219161h114.988917l230.494605 147.915841c32.582069 14.128789 57.840336-0.980327 57.840336-33.04358V164.54559c0-32.120558-25.892717-46.825468-57.840336-33.042557z m194.223516 186.033997c-10.841929-11.649318-29.122271-12.283768-40.712237-1.384533-11.649318 10.899234-12.226462 29.122271-1.384533 40.770565 5.363148 5.76633 14.531971 18.511609 23.989367 37.772279 16.146749 32.870642 25.892717 71.449285 25.892717 115.507733 0 44.058448-9.745968 82.694397-25.892717 115.507734-9.457396 19.259646-18.626219 32.004925-23.989367 37.772278-10.899234 11.648294-10.264784 29.871331 1.384533 40.770566 11.648294 10.899234 29.871331 10.264784 40.770566-1.384533 9.054213-9.68764 21.509896-26.987654 33.620725-51.727105 19.895119-40.483017 31.774681-87.654362 31.774681-140.996245 0-53.341882-11.879562-100.514251-31.774681-140.996244-12.169157-24.62484-24.625864-41.983183-33.679054-51.612495z m176.806845-35.69599c-23.297612-39.444361-46.825468-66.778916-63.318094-81.483826-11.880585-10.609639-30.102598-9.572006-40.714284 2.36486-10.609639 11.936867-9.573029 30.101575 2.364861 40.712238 2.709715 2.421142 8.131191 7.842619 15.396665 16.261358 12.455683 14.416338 24.911366 31.601742 36.619012 51.439556 33.504068 56.860009 53.630455 123.349329 53.630455 199.066825s-20.126386 142.206816-53.68776 199.125153c-11.706623 19.836791-24.220634 37.022195-36.619012 51.438533-7.265474 8.41874-12.68695 13.840216-15.397689 16.261359-11.879562 10.610662-12.916171 28.833699-2.363837 40.714283 10.553357 11.879562 28.833699 12.916171 40.713261 2.363838 16.493649-14.70491 40.021505-41.98216 63.319117-81.483826 38.522362-65.336054 61.646012-141.745305 61.646012-228.41934 0.058328-86.614683-23.066345-163.023934-61.588707-228.361011z"/>
+                    <line
+                        v-if="soundMuted"
+                        class="sound-mute-slash"
+                        x1="200"
+                        y1="824"
+                        x2="824"
+                        y2="200"
+                    />
+                </svg>
+            </button>
+            <button @click="toggleTheme">{{ theme === 'dark' ? '亮色' : '暗色' }}</button>
             <button @click="reshuffle">打乱</button>
             <button @click="importConfigFromClipboard">导入</button>
             <button @click="exportConfigToClipboard">导出</button>
@@ -622,12 +825,23 @@ onUnmounted(() => {
                 { known: knownWordsSet.has(item.word) },
                 { uncertain: uncertainWordsSet.has(item.word) },
                 { active: activeItem?.word === item.word },
+                { speaking: speakingWord === item.word },
             ]"
             @click="handleWordClick(item)"
             @contextmenu="handleWordContextMenu(item, $event)"
             @mouseenter="handleWordHover(item.word)"
+            @mouseleave="cancelHoverSpeak"
         >
             <div class="word unselectable">{{ item.word }}</div>
+            <svg
+                v-if="speakingWord === item.word"
+                class="speak-icon"
+                viewBox="0 0 1024 1024"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+            >
+                <path d="M525.541411 131.503033l-230.494605 148.031475h-114.988917c-63.895239 0-115.679649 51.14996-115.679649 115.219161v230.898811c0 63.664995 51.150984 115.219161 115.679649 115.219161h114.988917l230.494605 147.915841c32.582069 14.128789 57.840336-0.980327 57.840336-33.04358V164.54559c0-32.120558-25.892717-46.825468-57.840336-33.042557z m194.223516 186.033997c-10.841929-11.649318-29.122271-12.283768-40.712237-1.384533-11.649318 10.899234-12.226462 29.122271-1.384533 40.770565 5.363148 5.76633 14.531971 18.511609 23.989367 37.772279 16.146749 32.870642 25.892717 71.449285 25.892717 115.507733 0 44.058448-9.745968 82.694397-25.892717 115.507734-9.457396 19.259646-18.626219 32.004925-23.989367 37.772278-10.899234 11.648294-10.264784 29.871331 1.384533 40.770566 11.648294 10.899234 29.871331 10.264784 40.770566-1.384533 9.054213-9.68764 21.509896-26.987654 33.620725-51.727105 19.895119-40.483017 31.774681-87.654362 31.774681-140.996245 0-53.341882-11.879562-100.514251-31.774681-140.996244-12.169157-24.62484-24.625864-41.983183-33.679054-51.612495z m176.806845-35.69599c-23.297612-39.444361-46.825468-66.778916-63.318094-81.483826-11.880585-10.609639-30.102598-9.572006-40.714284 2.36486-10.609639 11.936867-9.573029 30.101575 2.364861 40.712238 2.709715 2.421142 8.131191 7.842619 15.396665 16.261358 12.455683 14.416338 24.911366 31.601742 36.619012 51.439556 33.504068 56.860009 53.630455 123.349329 53.630455 199.066825s-20.126386 142.206816-53.68776 199.125153c-11.706623 19.836791-24.220634 37.022195-36.619012 51.438533-7.265474 8.41874-12.68695 13.840216-15.397689 16.261359-11.879562 10.610662-12.916171 28.833699-2.363837 40.714283 10.553357 11.879562 28.833699 12.916171 40.713261 2.363838 16.493649-14.70491 40.021505-41.98216 63.319117-81.483826 38.522362-65.336054 61.646012-141.745305 61.646012-228.41934 0.058328-86.614683-23.066345-163.023934-61.588707-228.361011z"/>
+            </svg>
         </div>
     </div>
 
@@ -638,33 +852,42 @@ onUnmounted(() => {
         :style="{ left: panelPos.left + 'px', top: panelPos.top + 'px' }"
         @click.stop
     >
-        <div class="detail-head">
-            <div class="detail-word">{{ activeItem.word }}</div>
-            <button class="speak" type="button" @click="speakWord(activeItem.word)">朗读</button>
+        <div class="detail-section">
+            <div class="detail-head">
+                <div class="detail-word">{{ activeItem.word }}</div>
+                <button class="speak" type="button" @click="speakWord(activeItem.word, true)">朗读</button>
+            </div>
+            <div class="phonetic" v-if="activeItem.us || activeItem.uk">
+                <span v-if="activeItem.us">美 /{{ activeItem.us }}/</span>
+                <span v-if="activeItem.uk">英 /{{ activeItem.uk }}/</span>
+            </div>
         </div>
-        <div class="phonetic" v-if="activeItem.us || activeItem.uk">
-            <span v-if="activeItem.us">美 /{{ activeItem.us }}/</span>
-            <span v-if="activeItem.uk">英 /{{ activeItem.uk }}/</span>
-        </div>
-        <div class="translation-list" v-if="activeItem.translations?.length">
+        <div class="detail-section" v-if="activeItem.translations?.length">
             <div class="translation-item" v-for="translation in activeItem.translations" :key="translation.type + translation.translation">
                 <div class="type">{{ translation.type }}</div>
                 <div class="translation">{{ translation.translation }}</div>
             </div>
         </div>
-        <div class="sentence-list" v-if="activeSentences.length">
+        <div class="detail-section" v-if="activeSentences.length">
             <div class="sentence-item" v-for="sentence in activeSentences" :key="sentence.sentence">
                 <div class="sentence-en">{{ sentence.sentence }}</div>
                 <div class="sentence-cn">{{ sentence.translation }}</div>
             </div>
         </div>
-        <div class="phrase-list" v-if="activePhrases.length">
+        <div class="detail-section" v-if="activePhrases.length">
             <div class="phrase-item" v-for="phrase in activePhrases" :key="phrase.phrase">
                 <span class="phrase">{{ phrase.phrase }}</span>
                 <span class="phrase-cn">{{ phrase.translation }}</span>
             </div>
         </div>
-        <div class="detail-hint">单击 会了 · /+单击 再看 · Ctrl+单击 取消 · 右键 释义</div>
+        <div class="detail-section">
+            <div class="detail-actions">
+                <button type="button" :class="['action', 'known', { on: activeStatus === 'known' }]" @click="markKnown(activeItem.word)">会</button>
+                <button type="button" :class="['action', 'unknown', { on: activeStatus === 'new' }]" @click="markUnknown(activeItem.word)">不会</button>
+                <button type="button" :class="['action', 'review', { on: activeStatus === 'uncertain' }]" @click="markUncertain(activeItem.word)">待复习</button>
+            </div>
+            <div class="detail-hint">单击 会 · /+单击 待复习 · Ctrl+单击 取消 · 悬停稍候发音</div>
+        </div>
     </div>
 
     <div v-if="toast" class="toast">{{ toast }}</div>
