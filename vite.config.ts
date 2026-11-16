@@ -26,13 +26,13 @@ export default defineConfig({
     },
     base: './',
     build: {
-        outDir: 'docs'
+        outDir: 'dist'
     },
     plugins: [
         vue(),
         svgLoader(),
         zipPack({
-            inDir: 'docs',
+            inDir: 'dist',
             outDir: 'archive',
             outFileName: `vocabulary-${timeStringNow}.zip`,
             pathPrefix: ''
